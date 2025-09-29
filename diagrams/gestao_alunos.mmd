@@ -1,0 +1,80 @@
+erDiagram
+    OFERTA {
+        ID int PK "Not Null"
+        ANO int "Not Null"
+        SEMESTRE int "Not Null"
+        ID_MATERIA int FK "References MATERIA(ID), Not Null"
+        ID_PROFESSOR int FK "References PROFESSOR(ID_PROFESSOR), Not Null"
+    }
+
+    ALUNO {
+        MATRICULA int PK "Not Null"
+        CPF String "Not Null"
+        NOME String "Not Null"
+        DATA_NASC Date "Not Null"
+        TELEFONE String "Not Null"
+        EMAIL String "Not Null"
+        PERIODO int "Not Null"
+        ID_CURSO int FK "References CURSO(ID), Not Null"
+        STATUS_CURSO String "Not Null"
+    }
+
+    PROFESSOR {
+        ID int PK "Not Null"
+        CPF String "Not Null"
+        NOME String "Not Null"
+        DATA_NASC Date "Not Null"
+        TELEFONE String "Not Null"
+        EMAIL String "Not Null"
+        STATUS String "Not Null"
+    }
+
+    AVALIACAO {
+        ID int PK "Not Null"
+        TIPO String "Not Null"
+        PESO float "Not Null"
+        DATA Date "Not Null"
+        ID_OFERTA int FK "References OFERTA(ID), Not Null"
+    }
+
+    GRADE_ALUNO {
+        ID_ALUNO int PK, FK "References ALUNO(MATRICULA), Not Null"
+        ID_OFERTA int PK, FK "References OFERTA(ID), Not Null"
+        STATUS String "Not Null"
+        MEDIA_FINAL float "Not Null"
+    }
+
+    CURSO {
+        ID int PK "Not Null"
+        NOME String "Not Null"
+        CARGA_HORARIA_TOTAL int "Not Null"
+    }
+
+    MATERIA {
+        ID int PK "Not Null"
+        ID_CURSO int PK, FK "References CURSO(ID), Not Null"
+        PERIODO int "Not Null"
+        NOME String "Not Null"
+        CARGA_HORARIA int "Not Null"
+        MEDIA_APROVACAO float "Not Null"
+    }
+
+    AVALIACAO_ALUNO {
+        ID_AVALIACAO int PK, FK "References AVALIACAO(ID), Not Null"
+        ID_ALUNO int PK, FK "References ALUNO(MATRICULA), Not Null"
+        NOTA float "Not Null"
+    }
+
+    AVALIACAO ||--o{ AVALIACAO_ALUNO : "atribui nota"
+
+    CURSO ||--o{ MATERIA : "possui"
+    CURSO ||--o{ ALUNO : "tem"
+
+    OFERTA ||--o{ GRADE_ALUNO : "inclui"
+    OFERTA ||--o{ AVALIACAO : "possui"
+
+    ALUNO ||--o{ GRADE_ALUNO : "matricula-se em"
+    ALUNO ||--o{ AVALIACAO_ALUNO : "realiza"
+
+    MATERIA ||--o{ OFERTA : "é ofertada em"
+    PROFESSOR ||--o{ OFERTA : "leciona"
