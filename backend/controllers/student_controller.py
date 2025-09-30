@@ -1,99 +1,108 @@
-from db.db_conn import get_db_connection
+from db.db_conn import get_connection, release_connection, next_seq_val
+from datetime import datetime
 
-def get_next_student_id(conn):
-    """
-    Retrieves the next available student ID by finding the current maximum ID in the students table and adding one.
-    
-    Returns:
-        int: The next available student ID.
-    """
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    
+def format_date_for_oracle(dt_str):
+    """Convert date from 'DD/MM/YYYY' to 'YYYY-MM-DD' format or NULL."""
+    if not dt_str:
+        return 'NULL'
     try:
-        cursor.execute("SELECT seq_student_id.NEXTVAL FROM dual")
-        next_id = cursor.fetchone()[0]
-        return next_id
-    finally:
-        cursor.close()
-        connection.close()
+        datetime.strptime(dt_str, '%Y-%m-%d')
+    except ValueError:
+        raise ValueError("A data deve estar no formato 'YYYY-MM-DD'.")
+    return dt_str
 
-def insert_student(matricula, nome, data_nasc, telefone, email):
-    """
-    Inserts a new student record into the students table.
-    
-    Args:
-        matricula (str): The matricula of the student.
-        nome (str): The name of the student.
-        data_nasc (str): The birth date of the student.
-        telefone (str): The phone number of the student.
-        email (str): The email address of the student.
-
-    Returns:
-        int: The ID of the newly inserted student.
-    """
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    
+def create_student(matricula, nome, data_nasc=None, cpf=None, telefone=None, email=None, periodo=None, course_id=None, status_curso=None):
+    conn = get_connection()
+    cur = conn.cursor()
     try:
-        student_id = get_next_student_id(connection)
-        cursor.execute(
-            "INSERT INTO students (id, matricula, nome, data_nasc, telefone, email) VALUES (:id, :matricula, :nome, :data_nasc, :telefone, :email)",
-            id=student_id, matricula=matricula, nome=nome, data_nasc=data_nasc, telefone=telefone, email=email
-        )
-        connection.commit()
-        return student_id
+        new_id = next_seq_val("seq_student", conn)
+        sql = """
+        INSERT INTO student (id, matricula, cpf, nome, data_nasc, telefone, email, periodo, course_id, status_curso)
+        VALUES (:id, :matricula, :cpf, :nome,
+                CASE WHEN :data_nasc IS NULL THEN NULL ELSE TO_DATE(:data_nasc,'YYYY-MM-DD') END,
+                :telefone, :email, :periodo, :course_id, :status_curso)
+        """
+        cur.execute(sql, {
+            'id': new_id,
+            'matricula': matricula,
+            'cpf': cpf,
+            'nome': nome,
+            'data_nasc': format_date_for_oracle(data_nasc),
+            'telefone': telefone,
+            'email': email,
+            'periodo': periodo,
+            'course_id': course_id,
+            'status_curso': status_curso
+        })
+        conn.commit()
+        return new_id
     finally:
-        cursor.close()
-        connection.close()
+        cur.close()
+        release_connection(conn)
 
 def list_students():
-    """
-    Retrieves all student records from the students table.
-    
-    Returns:
-        list of dict: A list of dictionaries, each representing a student record.
-    """
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    
+    conn = get_connection()
+    cur = conn.cursor()
     try:
-        cursor.execute("SELECT id, matricula, nome, data_nasc, telefone, email FROM students ORDER BY nome")
-        rows = cursor.fetchall()
+        sql = "SELECT id, matricula, cpf, nome, TO_CHAR(data_nasc, 'YYYY-MM-DD'), telefone, email, periodo, course_id, status_curso FROM student"
+        cur.execute(sql)
+        rows = cur.fetchall()
         students = []
         for row in rows:
             students.append({
                 'id': row[0],
                 'matricula': row[1],
-                'nome': row[2],
-                'data_nasc': row[3],
-                'telefone': row[4],
-                'email': row[5]
+                'cpf': row[2],
+                'nome': row[3],
+                'data_nasc': row[4],
+                'telefone': row[5],
+                'email': row[6],
+                'periodo': row[7],
+                'course_id': row[8],
+                'status_curso': row[9]
             })
         return students
     finally:
-        cursor.close()
-        connection.close()
+        cur.close()
+        release_connection(conn)
+
+def get_student_by_id(student_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        sql = "SELECT id, matricula, cpf, nome, TO_CHAR(data_nasc, 'YYYY-MM-DD'), telefone, email, periodo, course_id, status_curso FROM student WHERE id = :id"
+        cur.execute(sql, {'id': student_id})
+        row = cur.fetchone()
+        if row:
+            return {
+                'id': row[0],
+                'matricula': row[1],
+                'cpf': row[2],
+                'nome': row[3],
+                'data_nasc': row[4],
+                'telefone': row[5],
+                'email': row[6],
+                'periodo': row[7],
+                'course_id': row[8],
+                'status_curso': row[9]
+            }
+        return None
+    finally:
+        cur.close()
+        release_connection(conn)
 
 def delete_student(student_id):
-    """
-    Deletes a student record from the students table based on the provided student ID.
-    
-    Args:
-        student_id (int): The ID of the student to be deleted.
-    """
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("SELECT COUNT(1) FROM GRADE_ALUNO WHERE aluno_id = :id", id=student_id)
-    cnt = cursor.fetchone()[0]
-    if cnt > 0:
-        cursor.close()
-        connection.close()
-        raise ValueError("Aluno possui notas cadastradas, não pode ser excluído.")
+    conn = get_connection()
+    cur = conn.cursor()
     try:
-        cursor.execute("DELETE FROM students WHERE id = :id", id=student_id)
-        connection.commit()
+        cur.execute("SELECT COUNT(1) FROM grade_aluno where aluno_id = :id", {'id': student_id})
+        cnt = cur.fetchone()[0]
+        if cnt > 0:
+            return False, "Aluno possui notas matricula e não pode ser excluído, remova-as antes."
+        sql = "DELETE FROM student WHERE id = :id", {'id': student_id}
+        cur.execute(sql, {'id': student_id})
+        conn.commit()
+        return cur.rowcount, None
     finally:
-        cursor.close()
-        connection.close()
+        cur.close()
+        release_connection(conn)

@@ -1,4 +1,4 @@
-Flask == 2.3.0
-oracledb == 1.0.0
-pandas == 2.1.0
-python-dotenv == 1.0.0
+Flask==2.3.2
+python-dotenv==1.0.0
+oracledb==1.6.0
+pandas==2.1.2
