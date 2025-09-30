@@ -1,24 +1,41 @@
 import oracledb
 import os
+from dotenv import load_dotenv
 
-def get_db_connection():
-    """
-    Establishes and returns a connection to the Oracle database using environment variables for configuration.
-    
-    Environment Variables:
-    - DB_USER: Database username
-    - DB_PASSWORD: Database password
-    - DB_DSN: Data Source Name (DSN) for the database connection
-    
-    Returns:
-        oracledb.Connection: A connection object to the Oracle database.
-    """
-    user = os.getenv('labdatabase')
-    password = os.getenv('lab@Database2025')
-    dsn = os.getenv('XEPDB1')
+load_dotenv()
 
-    if not all([user, password, dsn]):
-        raise ValueError("As variaveis de configuração do ambiente não estão definidas corretamente.")
+ORACLE_USER = os.getenv('labdatabase')
+ORACLE_PASS = os.getenv('lab@Database2025')
+ORACLE_DSN = os.getenv('XEPDB1')
+POOL_MIN = int(os.getenv('POOL_MIN', 1))
+POOL_MAX = int(os.getenv('POOL_MAX', 5))
 
-    connection = oracledb.connect(user=user, password=password, dsn=dsn)
-    return connection
+pool = oracledb.create_pool(user=ORACLE_USER,
+                            password=ORACLE_PASS,
+                            dsn=ORACLE_DSN,
+                            min=POOL_MIN,
+                            max=POOL_MAX,
+                            increment=1,
+                            encoding="UTF-8")
+
+def get_connection():
+    # Obtém uma conexão do pool de conexões
+    return pool.acquire()
+
+def release_connection(conn):
+    # Libera a conexão de volta para o pool
+    pool.release(conn)
+
+def next_seq_val(sequence_name: str, conn=None):
+    # Obtém o próximo valor de uma sequência
+    close_conn = False
+    if conn is None:
+        conn = get_connection()
+        close_conn = True
+    cur = conn.cursor()
+    cur.execute(f"SELECT {sequence_name}.NEXTVAL FROM dual")
+    val = cur.fetchone()[0]
+    cur.close()
+    if close_conn:
+        release_connection(conn)
+    return val
