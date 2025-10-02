@@ -269,6 +269,6 @@ AVALIACAO_ALUNO -- Notas individuais
 ✅ **API REST completa** com vulnerabilidades  
 ✅ **Arquitetura MVC** com Flask e Oracle  
 ✅ **Sistema CRUD** funcional para gestão acadêmica  
-✅ **Documentação completa**
+✅ **Documentação completa** 
 
 **BACKEND COMPLETO DESENVOLVIDO PARA MATÉRIA DE BANCO DE DADOS DO PROFESSOR HOWARD** 🎯
