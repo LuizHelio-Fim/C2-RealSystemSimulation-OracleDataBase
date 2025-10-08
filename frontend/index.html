@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestão de Estudantes</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/globals.css">
 </head>
 <body>
-     Splash Screen 
+    <!-- Splash Screen -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
-            <div class="splash-logo">📚</div>
+            <div class="splash-logo">📚<                        <button class="btn btn-primary" onclick="addEvaluation()">
+                            ➕ Nova Avaliação
+                        </button>v>
             <h1>Sistema de Gestão de Estudantes</h1>
             
             <div class="stats-grid">
@@ -70,9 +72,9 @@
         </div>
     </div>
 
-     Main Application 
+    <!-- Main Application -->
     <div class="app-container" id="appContainer">
-         Sidebar 
+        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">📚 SGE</div>
@@ -125,9 +127,9 @@
             </nav>
         </aside>
 
-         Main Content 
+        <!-- Main Content -->
         <main class="main-content">
-             Dashboard View 
+            <!-- Dashboard View -->
             <div id="dashboardView" class="view active">
                 <div class="header">
                     <h1 class="header-title">Dashboard</h1>
@@ -229,12 +231,12 @@
                 </div>
             </div>
 
-             Students View 
+            <!-- Students View -->
             <div id="studentsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Alunos</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('student')">
+                        <button class="btn btn-primary" onclick="addStudent()">
                             ➕ Adicionar Aluno
                         </button>
                     </div>
@@ -270,12 +272,12 @@
                 </div>
             </div>
 
-             Courses View 
+            <!-- Courses View -->
             <div id="coursesView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Cursos</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('course')">
+                        <button class="btn btn-primary" onclick="addCourse()">
                             ➕ Adicionar Curso
                         </button>
                     </div>
@@ -308,12 +310,12 @@
                 </div>
             </div>
 
-             Professors View 
+            <!-- Professors View -->
             <div id="professorsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Professores</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('professor')">
+                        <button class="btn btn-primary" onclick="addProfessor()">
                             ➕ Adicionar Professor
                         </button>
                     </div>
@@ -347,12 +349,12 @@
                 </div>
             </div>
 
-             Subjects View 
+            <!-- Subjects View -->
             <div id="subjectsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Matérias</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('subject')">
+                        <button class="btn btn-primary" onclick="addSubject()">
                             ➕ Adicionar Matéria
                         </button>
                     </div>
@@ -385,12 +387,12 @@
                 </div>
             </div>
 
-             Offers View 
+            <!-- Offers View -->
             <div id="offersView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Ofertas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('offer')">
+                        <button class="btn btn-primary" onclick="addOffer()">
                             ➕ Adicionar Oferta
                         </button>
                     </div>
@@ -424,7 +426,7 @@
                 </div>
             </div>
 
-             Evaluations View 
+            <!-- Evaluations View -->
             <div id="evaluationsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Avaliações</h1>
@@ -463,12 +465,12 @@
                 </div>
             </div>
 
-             Enrollments View 
+            <!-- Enrollments View -->
             <div id="enrollmentsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Matrículas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('enrollment')">
+                        <button class="btn btn-primary" onclick="addEnrollment()">
                             ➕ Nova Matrícula
                         </button>
                     </div>
@@ -501,12 +503,12 @@
                 </div>
             </div>
 
-             Grades View 
+            <!-- Grades View -->
             <div id="gradesView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Notas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="openAddModal('grade')">
+                        <button class="btn btn-primary" onclick="addGrade()">
                             ➕ Lançar Nota
                         </button>
                     </div>
@@ -538,7 +540,7 @@
                 </div>
             </div>
 
-             Reports View 
+            <!-- Reports View -->
             <div id="reportsView" class="view" style="display: none;">
                 <div class="header">
                     <h1 class="header-title">Relatórios</h1>
@@ -589,9 +591,9 @@
         </main>
     </div>
 
-     Dynamic Modal Container 
+    <!-- Dynamic Modal Container -->
     <div id="modalContainer"></div>
 
-    <script src="app.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>
