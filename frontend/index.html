@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Estudantes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+     Splash Screen 
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-content">
+            <div class="splash-logo">📚</div>
+            <h1>Sistema de Gestão de Estudantes</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalStudents">0</span>
+                    <span class="stat-label">Alunos</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalCourses">0</span>
+                    <span class="stat-label">Cursos</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalProfessors">0</span>
+                    <span class="stat-label">Professores</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalSubjects">0</span>
+                    <span class="stat-label">Matérias</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalOffers">0</span>
+                    <span class="stat-label">Ofertas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalEvaluations">0</span>
+                    <span class="stat-label">Avaliações</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalEnrollments">0</span>
+                    <span class="stat-label">Matrículas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalGrades">0</span>
+                    <span class="stat-label">Notas</span>
+                </div>
+            </div>
+
+            <div class="credits">
+                <h3>Criado por:</h3>
+                <div class="credits-list">
+                    <span class="credit-tag">Bernardo Lodi</span>
+                    <span class="credit-tag">João Guilherme</span>
+                    <span class="credit-tag">Luanna Hevellyn</span>
+                    <span class="credit-tag">Luiz Fim</span>
+                    <span class="credit-tag">Pedro Sousa</span>
+                    <span class="credit-tag">Thomas Veiga</span>
+                </div>
+                <p>
+                    <strong>Disciplina:</strong> Banco de Dados 2025/2<br>
+                    <strong>Professor:</strong> Howard Roatti
+                </p>
+            </div>
+
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+     Main Application 
+    <div class="app-container" id="appContainer">
+         Sidebar 
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📚 SGE</div>
+                <p style="color: var(--color-text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+                    Sistema de Gestão de Estudantes
+                </p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-view="students">
+                    <span class="nav-icon">👨‍🎓</span>
+                    <span>Alunos</span>
+                </a>
+                <a class="nav-item" data-view="courses">
+                    <span class="nav-icon">📚</span>
+                    <span>Cursos</span>
+                </a>
+                <a class="nav-item" data-view="professors">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Professores</span>
+                </a>
+                <a class="nav-item" data-view="subjects">
+                    <span class="nav-icon">📖</span>
+                    <span>Matérias</span>
+                </a>
+                <a class="nav-item" data-view="offers">
+                    <span class="nav-icon">🎓</span>
+                    <span>Ofertas</span>
+                </a>
+                <a class="nav-item" data-view="evaluations">
+                    <span class="nav-icon">📝</span>
+                    <span>Avaliações</span>
+                </a>
+                <a class="nav-item" data-view="enrollments">
+                    <span class="nav-icon">✅</span>
+                    <span>Matrículas</span>
+                </a>
+                <a class="nav-item" data-view="grades">
+                    <span class="nav-icon">📊</span>
+                    <span>Notas</span>
+                </a>
+                <a class="nav-item" data-view="reports">
+                    <span class="nav-icon">📈</span>
+                    <span>Relatórios</span>
+                </a>
+            </nav>
+        </aside>
+
+         Main Content 
+        <main class="main-content">
+             Dashboard View 
+            <div id="dashboardView" class="view active">
+                <div class="header">
+                    <h1 class="header-title">Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="refreshAllData()">
+                            🔄 Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon blue">👨‍🎓</div>
+                            <div>
+                                <div class="card-title">Alunos</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashStudents">0</div>
+                        <div class="card-description">Total de alunos cadastrados</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon orange">📚</div>
+                            <div>
+                                <div class="card-title">Cursos</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashCourses">0</div>
+                        <div class="card-description">Cursos disponíveis</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon blue">👨‍🏫</div>
+                            <div>
+                                <div class="card-title">Professores</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashProfessors">0</div>
+                        <div class="card-description">Professores cadastrados</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon orange">📖</div>
+                            <div>
+                                <div class="card-title">Matérias</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashSubjects">0</div>
+                        <div class="card-description">Matérias cadastradas</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon blue">🎓</div>
+                            <div>
+                                <div class="card-title">Ofertas</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashOffers">0</div>
+                        <div class="card-description">Ofertas semestrais</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon orange">📝</div>
+                            <div>
+                                <div class="card-title">Avaliações</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashEvaluations">0</div>
+                        <div class="card-description">Avaliações cadastradas</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon blue">✅</div>
+                            <div>
+                                <div class="card-title">Matrículas</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashEnrollments">0</div>
+                        <div class="card-description">Matrículas ativas</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon orange">📊</div>
+                            <div>
+                                <div class="card-title">Notas</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashGrades">0</div>
+                        <div class="card-description">Notas lançadas</div>
+                    </div>
+                </div>
+            </div>
+
+             Students View 
+            <div id="studentsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Alunos</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('student')">
+                            ➕ Adicionar Aluno
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Alunos</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar aluno..." onkeyup="filterTable('studentsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Matrícula</th>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>Email</th>
+                                    <th>Período</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <tr><td colspan="8" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Courses View 
+            <div id="coursesView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Cursos</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('course')">
+                            ➕ Adicionar Curso
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Cursos</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar curso..." onkeyup="filterTable('coursesTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="coursesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Código</th>
+                                    <th>Carga Horária</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursesTableBody">
+                                <tr><td colspan="5" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Professors View 
+            <div id="professorsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Professores</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('professor')">
+                            ➕ Adicionar Professor
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Professores</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar professor..." onkeyup="filterTable('professorsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="professorsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="professorsTableBody">
+                                <tr><td colspan="6" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Subjects View 
+            <div id="subjectsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Matérias</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('subject')">
+                            ➕ Adicionar Matéria
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Matérias</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar matéria..." onkeyup="filterTable('subjectsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="subjectsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID Matéria</th>
+                                    <th>ID Curso</th>
+                                    <th>Nome</th>
+                                    <th>Carga Horária</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjectsTableBody">
+                                <tr><td colspan="5" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Offers View 
+            <div id="offersView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Ofertas</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('offer')">
+                            ➕ Adicionar Oferta
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Ofertas</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar oferta..." onkeyup="filterTable('offersTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="offersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ano</th>
+                                    <th>Semestre</th>
+                                    <th>Professor</th>
+                                    <th>Matéria</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="offersTableBody">
+                                <tr><td colspan="6" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Evaluations View 
+            <div id="evaluationsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Avaliações</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('evaluation')">
+                            ➕ Adicionar Avaliação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Avaliações</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar avaliação..." onkeyup="filterTable('evaluationsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="evaluationsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Oferta</th>
+                                    <th>Tipo</th>
+                                    <th>Peso</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="evaluationsTableBody">
+                                <tr><td colspan="6" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Enrollments View 
+            <div id="enrollmentsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Matrículas</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('enrollment')">
+                            ➕ Nova Matrícula
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Matrículas</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar matrícula..." onkeyup="filterTable('enrollmentsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="enrollmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Oferta</th>
+                                    <th>Status</th>
+                                    <th>Média Final</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrollmentsTableBody">
+                                <tr><td colspan="5" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Grades View 
+            <div id="gradesView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Notas</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="openAddModal('grade')">
+                            ➕ Lançar Nota
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Notas</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar nota..." onkeyup="filterTable('gradesTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="gradesTable">
+                            <thead>
+                                <tr>
+                                    <th>Avaliação</th>
+                                    <th>Aluno</th>
+                                    <th>Nota</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesTableBody">
+                                <tr><td colspan="4" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+             Reports View 
+            <div id="reportsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Relatórios</h1>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--color-primary);">Relatório de Alunos</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+                            Visualize estatísticas completas sobre alunos cadastrados
+                        </p>
+                        <button class="btn btn-secondary" onclick="generateReport('students')">
+                            📊 Ver Relatório
+                        </button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--color-accent);">Relatório de Cursos</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+                            Análise detalhada dos cursos e suas matérias
+                        </p>
+                        <button class="btn btn-secondary" onclick="generateReport('courses')">
+                            📊 Ver Relatório
+                        </button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--color-primary);">Relatório de Professores</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+                            Carga de trabalho e ofertas por professor
+                        </p>
+                        <button class="btn btn-secondary" onclick="generateReport('professors')">
+                            📊 Ver Relatório
+                        </button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--color-accent);">Dashboard Geral</h3>
+                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+                            Visão completa de todas as estatísticas do sistema
+                        </p>
+                        <button class="btn btn-accent" onclick="generateReport('dashboard')">
+                            📈 Ver Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+     Dynamic Modal Container 
+    <div id="modalContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
