@@ -52,24 +52,16 @@ def create_student():
             formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
             
             new_id = next_seq_val("seq_student", conn)
-            sql = """
-            INSERT INTO student (id, matricula, cpf, nome, data_nasc, telefone, email, periodo, course_id, status_curso)
-            VALUES (:id, :matricula, :cpf, :nome,
-                    CASE WHEN :data_nasc IS NULL THEN NULL ELSE TO_DATE(:data_nasc,'YYYY-MM-DD') END,
-                    :telefone, :email, :periodo, :course_id, :status_curso)
-            """
-            cur.execute(sql, {
-                'id': new_id,
-                'matricula': matricula,
-                'cpf': cpf,
-                'nome': nome,
-                'data_nasc': formatted_date,
-                'telefone': telefone,
-                'email': email,
-                'periodo': periodo,
-                'course_id': course_id,
-                'status_curso': status_curso
-            })
+            
+            # VULNERÁVEL: Usando concatenação de strings
+            data_part = "NULL" if formatted_date is None else "TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')"
+            telefone_part = "NULL" if telefone is None else "'" + str(telefone) + "'"
+            cpf_part = "NULL" if cpf is None else "'" + str(cpf) + "'"
+            status_part = "NULL" if status_curso is None else "'" + str(status_curso) + "'"
+            
+            sql = "INSERT INTO ALUNO (MATRICULA, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO) VALUES (" + str(matricula) + ", " + cpf_part + ", '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', " + str(periodo) + ", " + str(course_id) + ", " + status_part + ")"
+            
+            cur.execute(sql)
             conn.commit()
             return jsonify({'id': new_id, 'message': 'Estudante criado com sucesso'}), 201
         except Exception as e:
@@ -88,22 +80,21 @@ def list_students():
     conn = get_connection()
     cur = conn.cursor()
     try:
-        sql = "SELECT id, matricula, cpf, nome, TO_CHAR(data_nasc, 'YYYY-MM-DD'), telefone, email, periodo, course_id, status_curso FROM student ORDER BY nome"
+        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNO ORDER BY NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         students = []
         for row in rows:
             students.append({
-                'id': row[0],
-                'matricula': row[1],
-                'cpf': row[2],
-                'nome': row[3],
-                'data_nasc': row[4],
-                'telefone': row[5],
-                'email': row[6],
-                'periodo': row[7],
-                'course_id': row[8],
-                'status_curso': row[9]
+                'matricula': row[0],
+                'cpf': row[1],
+                'nome': row[2],
+                'data_nasc': row[3],
+                'telefone': row[4],
+                'email': row[5],
+                'periodo': row[6],
+                'id_curso': row[7],
+                'status_curso': row[8]
             })
         return jsonify(students), 200
     except Exception as e:
@@ -123,60 +114,54 @@ def update_student(student_id):
         cur = conn.cursor()
 
         try:
-            # Verificar se o estudante existe
-            cur.execute("SELECT COUNT(1) FROM student WHERE id = :id", {'id': student_id})
+            # VULNERÁVEL: Verificar se o estudante existe
+            sql_check = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)
+            cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
                 return jsonify({'error': 'Estudante não encontrado'}), 404
 
-            # Construir query de atualização dinamicamente
-            update_fields = []
-            params = {'id': student_id}
+            # VULNERÁVEL: Construir query de atualização dinamicamente
+            update_parts = []
             
             if 'matricula' in data:
-                update_fields.append("matricula = :matricula")
-                params['matricula'] = data['matricula']
+                update_parts.append("MATRICULA = " + str(data['matricula']))
             
             if 'nome' in data:
-                update_fields.append("nome = :nome")
-                params['nome'] = data['nome']
+                update_parts.append("NOME = '" + str(data['nome']) + "'")
                 
             if 'cpf' in data:
-                update_fields.append("cpf = :cpf")
-                params['cpf'] = data['cpf']
+                cpf_val = "NULL" if data['cpf'] is None else "'" + str(data['cpf']) + "'"
+                update_parts.append("CPF = " + cpf_val)
                 
             if 'data_nasc' in data:
                 formatted_date = format_date_for_oracle(data['data_nasc']) if data['data_nasc'] else None
                 if formatted_date:
-                    update_fields.append("data_nasc = TO_DATE(:data_nasc,'YYYY-MM-DD')")
-                    params['data_nasc'] = formatted_date
+                    update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
                 else:
-                    update_fields.append("data_nasc = NULL")
+                    update_parts.append("DATA_NASC = NULL")
                     
             if 'telefone' in data:
-                update_fields.append("telefone = :telefone")
-                params['telefone'] = data['telefone']
+                tel_val = "NULL" if data['telefone'] is None else "'" + str(data['telefone']) + "'"
+                update_parts.append("TELEFONE = " + tel_val)
                 
             if 'email' in data:
-                update_fields.append("email = :email")
-                params['email'] = data['email']
+                update_parts.append("EMAIL = '" + str(data['email']) + "'")
                 
             if 'periodo' in data:
-                update_fields.append("periodo = :periodo")
-                params['periodo'] = data['periodo']
+                update_parts.append("PERIODO = " + str(data['periodo']))
                 
             if 'course_id' in data:
-                update_fields.append("course_id = :course_id")
-                params['course_id'] = data['course_id']
+                update_parts.append("ID_CURSO = " + str(data['course_id']))
                 
             if 'status_curso' in data:
-                update_fields.append("status_curso = :status_curso")
-                params['status_curso'] = data['status_curso']
+                status_val = "NULL" if data['status_curso'] is None else "'" + str(data['status_curso']) + "'"
+                update_parts.append("STATUS_CURSO = " + status_val)
 
-            if not update_fields:
+            if not update_parts:
                 return jsonify({'error': 'Nenhum campo para atualizar foi fornecido'}), 400
 
-            sql = f"UPDATE student SET {', '.join(update_fields)} WHERE id = :id"
-            cur.execute(sql, params)
+            sql = "UPDATE ALUNO SET " + ", ".join(update_parts) + " WHERE MATRICULA = " + str(student_id)
+            cur.execute(sql)
             conn.commit()
             
             return jsonify({'message': 'Estudante atualizado com sucesso'}), 200
@@ -198,8 +183,9 @@ def get_student_by_id(student_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        sql = "SELECT id, matricula, cpf, nome, TO_CHAR(data_nasc, 'YYYY-MM-DD'), telefone, email, periodo, course_id, status_curso FROM student WHERE id = :id"
-        cur.execute(sql, {'id': student_id})
+        # VULNERÁVEL: Usando concatenação de strings
+        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        cur.execute(sql)
         row = cur.fetchone()
         if row:
             student = {
@@ -227,21 +213,23 @@ def delete_student(student_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Check if student has grades
-        cur.execute("SELECT COUNT(1) FROM grade_aluno WHERE aluno_id = :id", {'id': student_id})
+        # VULNERÁVEL: Check if student has grades
+        sql_check = "SELECT COUNT(1) FROM GRADE_ALUNO WHERE ID_ALUNO = " + str(student_id)
+        cur.execute(sql_check)
         cnt = cur.fetchone()[0]
         if cnt > 0:
             return jsonify({'error': 'Aluno possui notas matricula e não pode ser excluído, remova-as antes.'}), 400
         
-        # Check if student exists
-        cur.execute("SELECT COUNT(1) FROM student WHERE id = :id", {'id': student_id})
+        # VULNERÁVEL: Check if student exists
+        sql_exists = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        cur.execute(sql_exists)
         student_exists = cur.fetchone()[0]
         if student_exists == 0:
             return jsonify({'error': 'Estudante não encontrado'}), 404
         
-        # Delete student
-        sql = "DELETE FROM student WHERE id = :id"
-        cur.execute(sql, {'id': student_id})
+        # VULNERÁVEL: Delete student
+        sql = "DELETE FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        cur.execute(sql)
         conn.commit()
         return jsonify({'message': 'Student deleted successfully'}), 200
     except Exception as e:
