@@ -10,9 +10,7 @@
     <!-- Splash Screen -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
-            <div class="splash-logo">📚<                        <button class="btn btn-primary" onclick="addEvaluation()">
-                            ➕ Nova Avaliação
-                        </button>v>
+            <div class="splash-logo">📚</div>
             <h1>Sistema de Gestão de Estudantes</h1>
             
             <div class="stats-grid">
@@ -236,7 +234,7 @@
                 <div class="header">
                     <h1 class="header-title">Alunos</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addStudent()">
+                        <button class="btn btn-primary" onclick="openAddModal('student')">
                             ➕ Adicionar Aluno
                         </button>
                     </div>
@@ -277,7 +275,7 @@
                 <div class="header">
                     <h1 class="header-title">Cursos</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addCourse()">
+                        <button class="btn btn-primary" onclick="openAddModal('course')">
                             ➕ Adicionar Curso
                         </button>
                     </div>
@@ -315,7 +313,7 @@
                 <div class="header">
                     <h1 class="header-title">Professores</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addProfessor()">
+                        <button class="btn btn-primary" onclick="openAddModal('professor')">
                             ➕ Adicionar Professor
                         </button>
                     </div>
@@ -354,7 +352,7 @@
                 <div class="header">
                     <h1 class="header-title">Matérias</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addSubject()">
+                        <button class="btn btn-primary" onclick="openAddModal('subject')">
                             ➕ Adicionar Matéria
                         </button>
                     </div>
@@ -392,7 +390,7 @@
                 <div class="header">
                     <h1 class="header-title">Ofertas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addOffer()">
+                        <button class="btn btn-primary" onclick="openAddModal('offer')">
                             ➕ Adicionar Oferta
                         </button>
                     </div>
@@ -470,7 +468,7 @@
                 <div class="header">
                     <h1 class="header-title">Matrículas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addEnrollment()">
+                        <button class="btn btn-primary" onclick="openAddModal('enrollment')">
                             ➕ Nova Matrícula
                         </button>
                     </div>
@@ -508,7 +506,7 @@
                 <div class="header">
                     <h1 class="header-title">Notas</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addGrade()">
+                        <button class="btn btn-primary" onclick="openAddModal('grade')">
                             ➕ Lançar Nota
                         </button>
                     </div>
