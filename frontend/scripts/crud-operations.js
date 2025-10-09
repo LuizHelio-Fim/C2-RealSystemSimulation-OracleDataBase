@@ -6,13 +6,13 @@ async function addStudent() {
     const formData = await showEditForm('Adicionar Aluno', [
       { name: 'matricula', label: 'Matrícula', type: 'text', required: true },
       { name: 'nome', label: 'Nome', type: 'text', required: true },
-      { name: 'cpf', label: 'CPF', type: 'text' },
+      { name: 'cpf', label: 'CPF', type: 'text', required: true },
       { name: 'email', label: 'Email', type: 'email', required: true },
       { name: 'telefone', label: 'Telefone', type: 'text' },
       { name: 'data_nasc', label: 'Data Nascimento', type: 'date' },
       { name: 'periodo', label: 'Período', type: 'number', required: true },
-      { name: 'course_id', label: 'ID do Curso', type: 'number', required: true },
-      { name: 'status_curso', label: 'Status', type: 'select', options: ['Ativo', 'Trancado', 'Formado'], value: 'Ativo' }
+      { name: 'id_curso', label: 'ID do Curso', type: 'number', required: true },
+      { name: 'status_curso', label: 'Status', type: 'select', options: ['Ativo', 'Trancado', 'Formado'], value: 'Ativo', required: true }
     ]);
 
     if (formData) {
@@ -27,9 +27,9 @@ async function addStudent() {
   }
 }
 
-async function editStudent(id) {
+async function editStudent(matricula) {
   try {
-    const student = appState.students.find(s => s.id === id || s.matricula === id);
+    const student = appState.students.find(s => s.matricula === matricula);
     if (!student) {
       showNotification("Aluno não encontrado!", "error");
       return;
@@ -38,17 +38,17 @@ async function editStudent(id) {
     const formData = await showEditForm('Editar Aluno', [
       { name: 'matricula', label: 'Matrícula', type: 'text', value: student.matricula, required: true },
       { name: 'nome', label: 'Nome', type: 'text', value: student.nome, required: true },
-      { name: 'cpf', label: 'CPF', type: 'text', value: student.cpf },
+      { name: 'cpf', label: 'CPF', type: 'text', value: student.cpf, required: true },
       { name: 'email', label: 'Email', type: 'email', value: student.email, required: true },
       { name: 'telefone', label: 'Telefone', type: 'text', value: student.telefone },
       { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: student.data_nasc },
       { name: 'periodo', label: 'Período', type: 'number', value: student.periodo, required: true },
-      { name: 'course_id', label: 'ID do Curso', type: 'number', value: student.course_id, required: true },
-      { name: 'status_curso', label: 'Status', type: 'select', value: student.status_curso, options: ['Ativo', 'Trancado', 'Formado'] }
+      { name: 'id_curso', label: 'ID do Curso', type: 'number', value: student.id_curso, required: true },
+      { name: 'status_curso', label: 'Status', type: 'select', value: student.status_curso, options: ['Ativo', 'Trancado', 'Formado'], required: true }
     ]);
 
     if (formData) {
-      await apiService.updateStudent(id, formData);
+      await apiService.updateStudent(matricula, formData);
       await dataManager.loadStudents();
       loadStudentsTable();
       updateDashboard();
@@ -59,11 +59,11 @@ async function editStudent(id) {
   }
 }
 
-async function deleteStudent(id) {
+async function deleteStudent(matricula) {
   if (!confirm("Tem certeza que deseja excluir este aluno?")) return;
 
   try {
-    await apiService.deleteStudent(id);
+    await apiService.deleteStudent(matricula);
     await dataManager.loadStudents();
     loadStudentsTable();
     updateDashboard();

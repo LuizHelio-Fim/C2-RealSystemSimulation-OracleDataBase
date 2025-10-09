@@ -11,5 +11,5 @@ class Student:
     telefone: str
     email: str
     periodo: int
-    id_curso: int
+    course_id: int
     status_curso: str

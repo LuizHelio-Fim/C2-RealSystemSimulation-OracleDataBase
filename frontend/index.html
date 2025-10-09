@@ -252,10 +252,11 @@
                         <table id="studentsTable">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Matrícula</th>
-                                    <th>Nome</th>
                                     <th>CPF</th>
+                                    <th>Nome</th>
+                                    <th>Data de Nascimento</th>
+                                    <th>Telefone</th>
                                     <th>Email</th>
                                     <th>Período</th>
                                     <th>Status</th>
@@ -295,7 +296,6 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Nome</th>
-                                    <th>Código</th>
                                     <th>Carga Horária</th>
                                     <th>Ações</th>
                                 </tr>
@@ -332,10 +332,11 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Nome</th>
                                     <th>CPF</th>
-                                    <th>Email</th>
+                                    <th>Nome</th>
+                                    <th>Data de Nascimento</th>
                                     <th>Telefone</th>
+                                    <th>Email</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -372,6 +373,7 @@
                                 <tr>
                                     <th>ID Matéria</th>
                                     <th>ID Curso</th>
+                                    <th>Periodo</th>
                                     <th>Nome</th>
                                     <th>Carga Horária</th>
                                     <th>Ações</th>
@@ -411,8 +413,8 @@
                                     <th>ID</th>
                                     <th>Ano</th>
                                     <th>Semestre</th>
-                                    <th>Professor</th>
-                                    <th>Matéria</th>
+                                    <th>ID Professor</th>
+                                    <th>ID Matéria</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -448,10 +450,10 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Oferta</th>
                                     <th>Tipo</th>
                                     <th>Peso</th>
                                     <th>Data</th>
+                                    <th>ID Oferta</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -476,7 +478,7 @@
 
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="table-title">Lista de Matrículas</h2>
+                        <h2 class="table-title">Grade Aluno</h2>
                         <div class="search-box">
                             <span>🔍</span>
                             <input type="text" placeholder="Buscar matrícula..." onkeyup="filterTable('enrollmentsTable', this.value)">
@@ -486,8 +488,8 @@
                         <table id="enrollmentsTable">
                             <thead>
                                 <tr>
-                                    <th>Aluno</th>
-                                    <th>Oferta</th>
+                                    <th>ID Aluno</th>
+                                    <th>ID Oferta</th>
                                     <th>Status</th>
                                     <th>Média Final</th>
                                     <th>Ações</th>
@@ -514,7 +516,7 @@
 
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="table-title">Lista de Notas</h2>
+                        <h2 class="table-title">Avaliação Aluno</h2>
                         <div class="search-box">
                             <span>🔍</span>
                             <input type="text" placeholder="Buscar nota..." onkeyup="filterTable('gradesTable', this.value)">
@@ -524,8 +526,8 @@
                         <table id="gradesTable">
                             <thead>
                                 <tr>
-                                    <th>Avaliação</th>
-                                    <th>Aluno</th>
+                                    <th>ID Avaliação</th>
+                                    <th>ID Aluno</th>
                                     <th>Nota</th>
                                     <th>Ações</th>
                                 </tr>
