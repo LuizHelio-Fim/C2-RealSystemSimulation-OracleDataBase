@@ -576,3 +576,40 @@ function showEditForm(title, fields) {
     resolve(valid ? result : null);
   });
 }
+
+// Funções auxiliares para edição inline
+async function updateStudent(id, studentData) {
+  try {
+    await apiService.updateStudent(id, studentData);
+    await dataManager.loadStudents();
+    loadStudentsTable();
+    updateDashboard();
+  } catch (error) {
+    console.error('Erro ao atualizar aluno:', error);
+    throw error;
+  }
+}
+
+async function updateProfessor(id, professorData) {
+  try {
+    await apiService.updateProfessor(id, professorData);
+    await dataManager.loadProfessors();
+    loadProfessorsTable();
+    updateDashboard();
+  } catch (error) {
+    console.error('Erro ao atualizar professor:', error);
+    throw error;
+  }
+}
+
+async function updateCourse(id, courseData) {
+  try {
+    await apiService.updateCourse(id, courseData);
+    await dataManager.loadCourses();
+    loadCoursesTable();
+    updateDashboard();
+  } catch (error) {
+    console.error('Erro ao atualizar curso:', error);
+    throw error;
+  }
+}

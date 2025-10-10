@@ -350,8 +350,13 @@ class DataManager {
   async loadStudents() {
     try {
       const data = await this.apiService.getStudents();
-      this.state.students = Array.isArray(data) ? data : [];
-      return this.state.students;
+      // Normalizar os dados para incluir 'id' baseado na matrícula
+      const students = Array.isArray(data) ? data.map(student => ({
+        ...student,
+        id: student.matricula // Usar matrícula como ID
+      })) : [];
+      this.state.students = students;
+      return students;
     } catch (error) {
       console.error('Erro ao carregar alunos:', error);
       this.state.students = [];
@@ -374,8 +379,13 @@ class DataManager {
   async loadProfessors() {
     try {
       const data = await this.apiService.getProfessors();
-      this.state.professors = Array.isArray(data) ? data : [];
-      return this.state.professors;
+      // Normalizar os dados para incluir 'id' baseado no id_professor
+      const professors = Array.isArray(data) ? data.map(professor => ({
+        ...professor,
+        id: professor.id_professor // Usar id_professor como ID
+      })) : [];
+      this.state.professors = professors;
+      return professors;
     } catch (error) {
       console.error('Erro ao carregar professores:', error);
       this.state.professors = [];

@@ -1,26 +1,68 @@
-// Função showNotification (deve estar no escopo global)
-function showNotification(message, type = 'info') {
-  const notification = document.createElement("div")
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    background: ${type === "success" ? "var(--color-success)" : type === "error" ? "var(--color-error)" : "var(--color-primary)"};
-    color: white;
-    border-radius: var(--radius-md);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
-  `
-  notification.textContent = message
-  document.body.appendChild(notification)
+// Sistema de notificações empilhadas
+let notificationContainer = null;
+let notificationCount = 0;
 
+function showNotification(message, type = 'info') {
+  // Criar container se não existir
+  if (!notificationContainer) {
+    notificationContainer = document.createElement("div");
+    notificationContainer.id = "notificationContainer";
+    notificationContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    `;
+    document.body.appendChild(notificationContainer);
+  }
+
+  const notification = document.createElement("div");
+  const notificationId = `notification-${notificationCount++}`;
+  notification.id = notificationId;
+  notification.style.cssText = `
+    padding: 1rem 1.5rem;
+    background: ${type === "success" ? "#10b981" : type === "error" ? "#ef4444" : "#3b82f6"};
+    color: white;
+    border-radius: 8px;
+    animation: slideInRight 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 350px;
+    pointer-events: auto;
+    cursor: pointer;
+    word-wrap: break-word;
+  `;
+  notification.textContent = message;
+  
+  // Clique para remover
+  notification.onclick = () => removeNotification(notification);
+  
+  notificationContainer.appendChild(notification);
+
+  // Auto-remover após 5 segundos
   setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease"
-    setTimeout(() => notification.remove(), 300)
-  }, 3000)
+    removeNotification(notification);
+  }, 5000);
+}
+
+function removeNotification(notification) {
+  if (notification && notification.parentNode) {
+    notification.style.animation = "slideOutRight 0.3s ease";
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+        
+        // Remover container se vazio
+        if (notificationContainer && notificationContainer.children.length === 0) {
+          notificationContainer.remove();
+          notificationContainer = null;
+        }
+      }
+    }, 300);
+  }
 }
 
 // Estado da aplicação
@@ -170,17 +212,17 @@ function loadStudentsTable() {
   appState.students.forEach((student) => {
     const row = document.createElement("tr")
     row.innerHTML = `
-      <td>${student.id}</td>
-      <td>${student.matricula}</td>
-      <td>${student.nome}</td>
-      <td>${student.cpf}</td>
-      <td>${student.email}</td>
-      <td>${student.periodo}º</td>
-      <td><span class="status-badge ${student.status_curso}">${student.status_curso}</span></td>
+      <td>${student.matricula || student.id}</td>
+      <td>${student.nome || 'N/A'}</td>
+      <td>${student.cpf || 'N/A'}</td>
+      <td>${student.email || 'N/A'}</td>
+      <td>${student.periodo ? student.periodo + 'º' : 'N/A'}</td>
+      <td>${student.id_curso || 'N/A'}</td>
+      <td><span class="status-badge ${student.status_curso ? student.status_curso.toLowerCase() : 'ativo'}">${student.status_curso || 'Ativo'}</span></td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editStudent(${student.id})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteStudent(${student.id})" title="Excluir">🗑️</button>
+          <button class="icon-btn edit" onclick="startInlineEdit('student', ${student.matricula || student.id}, this.closest('tr'))" title="Editar">✏️</button>
+          <button class="icon-btn delete" onclick="deleteStudent(${student.matricula || student.id})" title="Excluir">🗑️</button>
         </div>
       </td>
     `
@@ -219,26 +261,25 @@ function loadProfessorsTable() {
   const tbody = document.getElementById("professorsTableBody")
   tbody.innerHTML = ""
 
-  if (dataManager.professors.length === 0) {
+  if (appState.professors.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="8" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
+      '<tr><td colspan="7" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
     return
   }
 
-  dataManager.professors.forEach((professor) => {
+  appState.professors.forEach((professor) => {
     const row = document.createElement("tr")
     row.innerHTML = `
-      <td>${professor.id_professor}</td>
-      <td>${professor.cpf}</td>
-      <td>${professor.nome}</td>
-      <td>${professor.data_nasc ? new Date(professor.data_nasc).toLocaleDateString('pt-BR') : '-'}</td>
+      <td>${professor.id_professor || professor.id}</td>
+      <td>${professor.nome || 'N/A'}</td>
+      <td>${professor.cpf || 'N/A'}</td>
+      <td>${professor.email || 'N/A'}</td>
       <td>${professor.telefone || '-'}</td>
-      <td>${professor.email}</td>
-      <td><span class="status-badge ${professor.status?.toLowerCase()}">${professor.status}</span></td>
+      <td><span class="status-badge ${professor.status ? professor.status.toLowerCase() : 'ativo'}">${professor.status || 'Ativo'}</span></td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editProfessor(${professor.id_professor})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteProfessor(${professor.id_professor})" title="Excluir">🗑️</button>
+          <button class="icon-btn edit" onclick="startInlineEdit('professor', ${professor.id_professor || professor.id}, this.closest('tr'))" title="Editar">✏️</button>
+          <button class="icon-btn delete" onclick="deleteProfessor(${professor.id_professor || professor.id})" title="Excluir">🗑️</button>
         </div>
       </td>
     `
@@ -466,4 +507,172 @@ function formatDate(dateString) {
   if (!dateString) return "N/A"
   const date = new Date(dateString)
   return date.toLocaleDateString("pt-BR")
+}
+
+// Funcionalidades de Edição Inline
+let editingRow = null;
+let originalRowData = null;
+
+function startInlineEdit(entityType, id, row) {
+  // Se já existe uma linha sendo editada, cancelar a edição anterior
+  if (editingRow) {
+    cancelInlineEdit();
+  }
+
+  editingRow = row;
+  originalRowData = {};
+  
+  // Salvar dados originais e converter células para inputs
+  const cells = row.querySelectorAll('td:not(:last-child)');
+  cells.forEach((cell, index) => {
+    const originalValue = cell.textContent.trim();
+    originalRowData[index] = originalValue;
+    
+    // Determinar o tipo de input baseado no conteúdo e posição
+    let inputType = 'text';
+    let inputValue = originalValue;
+    
+    // Lógica específica para cada tipo de entidade
+    if (entityType === 'student') {
+      if (index === 4) { // Período
+        inputValue = originalValue.replace('º', '');
+        inputType = 'number';
+      } else if (index === 6) { // Status
+        const select = document.createElement('select');
+        select.innerHTML = `
+          <option value="Ativo" ${originalValue === 'Ativo' ? 'selected' : ''}>Ativo</option>
+          <option value="Inativo" ${originalValue === 'Inativo' ? 'selected' : ''}>Inativo</option>
+          <option value="Trancado" ${originalValue === 'Trancado' ? 'selected' : ''}>Trancado</option>
+          <option value="Formado" ${originalValue === 'Formado' ? 'selected' : ''}>Formado</option>
+        `;
+        cell.innerHTML = '';
+        cell.appendChild(select);
+        cell.classList.add('editable-cell');
+        return;
+      }
+    } else if (entityType === 'professor') {
+      if (index === 5) { // Status do professor
+        const select = document.createElement('select');
+        select.innerHTML = `
+          <option value="Ativo" ${originalValue === 'Ativo' ? 'selected' : ''}>Ativo</option>
+          <option value="Inativo" ${originalValue === 'Inativo' ? 'selected' : ''}>Inativo</option>
+          <option value="Afastado" ${originalValue === 'Afastado' ? 'selected' : ''}>Afastado</option>
+        `;
+        cell.innerHTML = '';
+        cell.appendChild(select);
+        cell.classList.add('editable-cell');
+        return;
+      } else if (index === 2) { // Email
+        inputType = 'email';
+      }
+    }
+    
+    // Criar input para campos editáveis (exceto primeiro campo que geralmente é ID)
+    if (index > 0) {
+      const input = document.createElement('input');
+      input.type = inputType;
+      input.value = inputValue;
+      cell.innerHTML = '';
+      cell.appendChild(input);
+      cell.classList.add('editable-cell');
+    }
+  });
+
+  // Trocar botões de ação por botões de salvar/cancelar
+  const actionsCell = row.querySelector('td:last-child');
+  actionsCell.innerHTML = `
+    <div class="edit-actions">
+      <button class="save-btn" onclick="saveInlineEdit('${entityType}', ${id})">Salvar</button>
+      <button class="cancel-btn" onclick="cancelInlineEdit()">Cancelar</button>
+    </div>
+  `;
+  
+  row.classList.add('editing-row');
+}
+
+function cancelInlineEdit() {
+  if (!editingRow || !originalRowData) return;
+
+  const cells = editingRow.querySelectorAll('td:not(:last-child)');
+  cells.forEach((cell, index) => {
+    cell.innerHTML = originalRowData[index] || '';
+    cell.classList.remove('editable-cell');
+  });
+
+  // Restaurar botões de ação originais
+  const actionsCell = editingRow.querySelector('td:last-child');
+  const entityType = getCurrentEntityType();
+  const id = getEntityIdFromRow(editingRow);
+  
+  actionsCell.innerHTML = `
+    <div class="table-actions">
+      <button class="icon-btn edit" onclick="startInlineEdit('${entityType}', ${id}, this.closest('tr'))" title="Editar">✏️</button>
+      <button class="icon-btn delete" onclick="delete${capitalizeFirst(entityType)}(${id})" title="Excluir">🗑️</button>
+    </div>
+  `;
+
+  editingRow.classList.remove('editing-row');
+  editingRow = null;
+  originalRowData = null;
+}
+
+async function saveInlineEdit(entityType, id) {
+  if (!editingRow) return;
+
+  try {
+    const cells = editingRow.querySelectorAll('td:not(:last-child)');
+    const updatedData = {};
+
+    // Extrair dados dos inputs baseado no tipo de entidade
+    if (entityType === 'student') {
+      const inputs = editingRow.querySelectorAll('input, select');
+      updatedData.nome = inputs[0]?.value || '';
+      updatedData.cpf = inputs[1]?.value || '';
+      updatedData.email = inputs[2]?.value || '';
+      updatedData.periodo = inputs[3]?.value || '';
+      updatedData.status_curso = inputs[4]?.value || '';
+    } else if (entityType === 'professor') {
+      const inputs = editingRow.querySelectorAll('input, select');
+      updatedData.nome = inputs[0]?.value || '';
+      updatedData.cpf = inputs[1]?.value || '';
+      updatedData.email = inputs[2]?.value || '';
+      updatedData.telefone = inputs[3]?.value || '';
+      updatedData.status = inputs[4]?.value || '';
+    }
+
+    // Chamar a função CRUD apropriada
+    if (entityType === 'student') {
+      await updateStudent(id, updatedData);
+    } else if (entityType === 'professor') {
+      await updateProfessor(id, updatedData);
+    }
+
+    // Limpar estado de edição
+    editingRow = null;
+    originalRowData = null;
+    
+    showNotification(`${capitalizeFirst(entityType)} atualizado com sucesso!`, 'success');
+    
+  } catch (error) {
+    console.error('Erro ao salvar edição inline:', error);
+    showNotification(`Erro ao atualizar ${entityType}: ${error.message}`, 'error');
+    cancelInlineEdit();
+  }
+}
+
+function getCurrentEntityType() {
+  const currentSection = appState.currentSection;
+  if (currentSection === 'students') return 'student';
+  if (currentSection === 'professors') return 'professor';
+  if (currentSection === 'courses') return 'course';
+  return 'unknown';
+}
+
+function getEntityIdFromRow(row) {
+  const firstCell = row.querySelector('td');
+  return firstCell ? firstCell.textContent.trim() : null;
+}
+
+function capitalizeFirst(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
