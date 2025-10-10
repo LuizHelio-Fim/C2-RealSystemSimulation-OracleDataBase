@@ -27,11 +27,18 @@ def create_evaluation():
         if not data:
             return jsonify({'error': 'Dados JSON são obrigatórios'}), 400
         
-        # Validar campos obrigatórios
-        required_fields = ['tipo', 'peso', 'data', 'id_oferta']
-        for field in required_fields:
-            if data.get(field) is None:
-                return jsonify({'error': f'Campo {field} é obrigatório'}), 400
+        # Validar campos obrigatórios conforme schema do banco (todos são NOT NULL)
+        tipo = data.get('tipo')
+        peso = data.get('peso')
+        data_avaliacao = data.get('data')
+        id_oferta = data.get('id_oferta')
+        
+        # Todos estes campos são NOT NULL no banco AVALIACAO
+        if not all([tipo, peso is not None, data_avaliacao, id_oferta is not None]):
+            return jsonify({
+                'success': False,
+                'message': 'Campos obrigatórios: tipo, peso, data, id_oferta'
+            }), 400
 
         conn = get_connection()
         cur = conn.cursor()

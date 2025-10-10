@@ -97,14 +97,14 @@ function switchView(viewName) {
 
 // Atualizar estatísticas do dashboard
 function updateDashboard() {
-  document.getElementById("dashStudents").textContent = appState.students.length
-  document.getElementById("dashCourses").textContent = appState.courses.length
-  document.getElementById("dashProfessors").textContent = appState.professors.length
-  document.getElementById("dashSubjects").textContent = appState.subjects.length
-  document.getElementById("dashOffers").textContent = appState.offers.length
-  document.getElementById("dashEvaluations").textContent = appState.evaluations.length
-  document.getElementById("dashEnrollments").textContent = appState.enrollments.length
-  document.getElementById("dashGrades").textContent = appState.grades.length
+  document.getElementById("dashStudents").textContent = dataManager.students.length
+  document.getElementById("dashCourses").textContent = dataManager.courses.length
+  document.getElementById("dashProfessors").textContent = dataManager.professors.length
+  document.getElementById("dashSubjects").textContent = dataManager.subjects.length
+  document.getElementById("dashOffers").textContent = dataManager.offers.length
+  document.getElementById("dashEvaluations").textContent = dataManager.evaluations.length
+  document.getElementById("dashEnrollments").textContent = dataManager.enrollments.length
+  document.getElementById("dashGrades").textContent = dataManager.grades.length
 }
 
 // Funções de carregamento de tabelas
@@ -169,24 +169,26 @@ function loadProfessorsTable() {
   const tbody = document.getElementById("professorsTableBody")
   tbody.innerHTML = ""
 
-  if (appState.professors.length === 0) {
+  if (dataManager.professors.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
+      '<tr><td colspan="8" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
     return
   }
 
-  appState.professors.forEach((professor) => {
+  dataManager.professors.forEach((professor) => {
     const row = document.createElement("tr")
     row.innerHTML = `
-      <td>${professor.id}</td>
-      <td>${professor.nome}</td>
+      <td>${professor.id_professor}</td>
       <td>${professor.cpf}</td>
+      <td>${professor.nome}</td>
+      <td>${professor.data_nasc ? new Date(professor.data_nasc).toLocaleDateString('pt-BR') : '-'}</td>
+      <td>${professor.telefone || '-'}</td>
       <td>${professor.email}</td>
-      <td>${professor.telefone}</td>
+      <td><span class="status-badge ${professor.status?.toLowerCase()}">${professor.status}</span></td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editProfessor(${professor.id})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteProfessor(${professor.id})" title="Excluir">🗑️</button>
+          <button class="icon-btn edit" onclick="editProfessor(${professor.id_professor})" title="Editar">✏️</button>
+          <button class="icon-btn delete" onclick="deleteProfessor(${professor.id_professor})" title="Excluir">🗑️</button>
         </div>
       </td>
     `
@@ -226,20 +228,20 @@ function loadOffersTable() {
   const tbody = document.getElementById("offersTableBody")
   tbody.innerHTML = ""
 
-  if (appState.offers.length === 0) {
+  if (dataManager.offers.length === 0) {
     tbody.innerHTML =
       '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma oferta cadastrada</td></tr>'
     return
   }
 
-  appState.offers.forEach((offer) => {
+  dataManager.offers.forEach((offer) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${offer.id}</td>
       <td>${offer.ano}</td>
       <td>${offer.semestre}º</td>
-      <td>${offer.professor_nome}</td>
-      <td>${offer.materia_nome}</td>
+      <td>${offer.professor_nome || '-'}</td>
+      <td>${offer.materia_nome || '-'}</td>
       <td>
         <div class="table-actions">
           <button class="icon-btn edit" onclick="editOffer(${offer.id})" title="Editar">✏️</button>

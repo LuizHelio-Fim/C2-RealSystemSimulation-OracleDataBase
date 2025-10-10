@@ -78,8 +78,7 @@ async function addCourse() {
   try {
     const formData = await showEditForm('Adicionar Curso', [
       { name: 'nome', label: 'Nome', type: 'text', required: true },
-      { name: 'codigo', label: 'Código', type: 'text', required: true },
-      { name: 'carga_horaria', label: 'Carga Horária', type: 'number', required: true }
+      { name: 'carga_horaria_total', label: 'Carga Horária Total', type: 'number', required: true }
     ]);
 
     if (formData) {
@@ -91,6 +90,7 @@ async function addCourse() {
     }
   } catch (error) {
     console.error('Erro ao criar curso:', error);
+    showNotification(`Erro ao criar curso: ${error.message}`, "error");
   }
 }
 
@@ -104,8 +104,7 @@ async function editCourse(id) {
 
     const formData = await showEditForm('Editar Curso', [
       { name: 'nome', label: 'Nome', type: 'text', value: course.nome, required: true },
-      { name: 'codigo', label: 'Código', type: 'text', value: course.codigo, required: true },
-      { name: 'carga_horaria', label: 'Carga Horária', type: 'number', value: course.carga_horaria, required: true }
+      { name: 'carga_horaria_total', label: 'Carga Horária Total', type: 'number', value: course.carga_horaria_total, required: true }
     ]);
 
     if (formData) {
@@ -117,6 +116,7 @@ async function editCourse(id) {
     }
   } catch (error) {
     console.error('Erro ao editar curso:', error);
+    showNotification(`Erro ao editar curso: ${error.message}`, "error");
   }
 }
 
@@ -131,6 +131,7 @@ async function deleteCourse(id) {
     showNotification("Curso excluído com sucesso!", "success");
   } catch (error) {
     console.error('Erro ao excluir curso:', error);
+    showNotification(`Erro ao excluir curso: ${error.message}`, "error");
   }
 }
 
@@ -141,6 +142,8 @@ async function addProfessor() {
       { name: 'nome', label: 'Nome', type: 'text', required: true },
       { name: 'cpf', label: 'CPF', type: 'text', required: true },
       { name: 'email', label: 'Email', type: 'email', required: true },
+      { name: 'status', label: 'Status', type: 'select', options: ['Ativo', 'Inativo', 'Afastado'], value: 'Ativo', required: true },
+      { name: 'data_nasc', label: 'Data Nascimento', type: 'date' },
       { name: 'telefone', label: 'Telefone', type: 'text' }
     ]);
 
@@ -153,12 +156,13 @@ async function addProfessor() {
     }
   } catch (error) {
     console.error('Erro ao criar professor:', error);
+    showNotification(`Erro ao criar professor: ${error.message}`, "error");
   }
 }
 
 async function editProfessor(id) {
   try {
-    const professor = appState.professors.find(p => p.id === id);
+    const professor = dataManager.professors.find(p => p.id_professor == id);
     if (!professor) {
       showNotification("Professor não encontrado!", "error");
       return;
@@ -168,6 +172,8 @@ async function editProfessor(id) {
       { name: 'nome', label: 'Nome', type: 'text', value: professor.nome, required: true },
       { name: 'cpf', label: 'CPF', type: 'text', value: professor.cpf, required: true },
       { name: 'email', label: 'Email', type: 'email', value: professor.email, required: true },
+      { name: 'status', label: 'Status', type: 'select', options: ['Ativo', 'Inativo', 'Afastado'], value: professor.status, required: true },
+      { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: professor.data_nasc ? professor.data_nasc.split('T')[0] : '' },
       { name: 'telefone', label: 'Telefone', type: 'text', value: professor.telefone }
     ]);
 
@@ -180,6 +186,7 @@ async function editProfessor(id) {
     }
   } catch (error) {
     console.error('Erro ao editar professor:', error);
+    showNotification(`Erro ao editar professor: ${error.message}`, "error");
   }
 }
 
@@ -194,6 +201,7 @@ async function deleteProfessor(id) {
     showNotification("Professor excluído com sucesso!", "success");
   } catch (error) {
     console.error('Erro ao excluir professor:', error);
+    showNotification(`Erro ao excluir professor: ${error.message}`, "error");
   }
 }
 
@@ -263,7 +271,7 @@ async function addOffer() {
   try {
     const formData = await showEditForm('Adicionar Oferta', [
       { name: 'ano', label: 'Ano', type: 'number', required: true },
-      { name: 'semestre', label: 'Semestre', type: 'number', required: true },
+      { name: 'semestre', label: 'Semestre', type: 'select', options: [1, 2], required: true },
       { name: 'id_professor', label: 'ID Professor', type: 'number', required: true },
       { name: 'id_materia', label: 'ID Matéria', type: 'number', required: true },
       { name: 'id_curso', label: 'ID Curso', type: 'number', required: true }
@@ -278,12 +286,13 @@ async function addOffer() {
     }
   } catch (error) {
     console.error('Erro ao criar oferta:', error);
+    showNotification(`Erro ao criar oferta: ${error.message}`, "error");
   }
 }
 
 async function editOffer(id) {
   try {
-    const offer = appState.offers.find(o => o.id === id);
+    const offer = dataManager.offers.find(o => o.id === id);
     if (!offer) {
       showNotification("Oferta não encontrada!", "error");
       return;
@@ -291,7 +300,7 @@ async function editOffer(id) {
 
     const formData = await showEditForm('Editar Oferta', [
       { name: 'ano', label: 'Ano', type: 'number', value: offer.ano, required: true },
-      { name: 'semestre', label: 'Semestre', type: 'number', value: offer.semestre, required: true },
+      { name: 'semestre', label: 'Semestre', type: 'select', options: [1, 2], value: offer.semestre, required: true },
       { name: 'id_professor', label: 'ID Professor', type: 'number', value: offer.id_professor, required: true },
       { name: 'id_materia', label: 'ID Matéria', type: 'number', value: offer.id_materia, required: true },
       { name: 'id_curso', label: 'ID Curso', type: 'number', value: offer.id_curso, required: true }
@@ -306,6 +315,7 @@ async function editOffer(id) {
     }
   } catch (error) {
     console.error('Erro ao editar oferta:', error);
+    showNotification(`Erro ao editar oferta: ${error.message}`, "error");
   }
 }
 
@@ -320,6 +330,7 @@ async function deleteOffer(id) {
     showNotification("Oferta excluída com sucesso!", "success");
   } catch (error) {
     console.error('Erro ao excluir oferta:', error);
+    showNotification(`Erro ao excluir oferta: ${error.message}`, "error");
   }
 }
 
