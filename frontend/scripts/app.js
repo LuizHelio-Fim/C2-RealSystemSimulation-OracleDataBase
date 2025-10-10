@@ -1,3 +1,28 @@
+// Função showNotification (deve estar no escopo global)
+function showNotification(message, type = 'info') {
+  const notification = document.createElement("div")
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    background: ${type === "success" ? "var(--color-success)" : type === "error" ? "var(--color-error)" : "var(--color-primary)"};
+    color: white;
+    border-radius: var(--radius-md);
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+  `
+  notification.textContent = message
+  document.body.appendChild(notification)
+
+  setTimeout(() => {
+    notification.style.animation = "slideOut 0.3s ease"
+    setTimeout(() => notification.remove(), 300)
+  }, 3000)
+}
+
 // Estado da aplicação
 const appState = {
   students: [],
@@ -12,20 +37,38 @@ const appState = {
 
 // Inicialização da aplicação
 document.addEventListener("DOMContentLoaded", async () => {
-  // Carregar dados da API
-  const success = await dataManager.loadAllData();
+  console.log("DOM carregado, iniciando aplicação...") // Debug
   
-  if (success) {
-    // Carregar todas as tabelas
-    loadStudentsTable();
-    loadCoursesTable();
-    loadProfessorsTable();
-    loadSubjectsTable();
-    loadOffersTable();
-    loadEvaluationsTable();
-    loadEnrollmentsTable();
-    loadGradesTable();
-    updateDashboard();
+  try {
+    // Carregar dados da API
+    const success = await dataManager.loadAllData();
+    console.log("Dados carregados:", success) // Debug
+    
+    if (success) {
+      // Sincronizar dados com appState
+      appState.students = dataManager.state.students;
+      appState.courses = dataManager.state.courses;
+      appState.professors = dataManager.state.professors;
+      appState.subjects = dataManager.state.subjects;
+      appState.offers = dataManager.state.offers;
+      appState.evaluations = dataManager.state.evaluations;
+      appState.enrollments = dataManager.state.enrollments;
+      appState.grades = dataManager.state.studentEvaluations;
+      
+      // Carregar todas as tabelas
+      loadStudentsTable();
+      loadCoursesTable();
+      loadProfessorsTable();
+      loadSubjectsTable();
+      loadOffersTable();
+      loadEvaluationsTable();
+      loadEnrollmentsTable();
+      loadGradesTable();
+      updateDashboard();
+    }
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error)
+    showNotification("Erro ao carregar dados. Verifique se o backend está rodando.", "error")
   }
 
   // Animar estatísticas da splash screen
@@ -35,7 +78,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Mostrar aplicação principal após splash
   setTimeout(() => {
-    document.getElementById("appContainer").classList.add("active")
+    console.log("Mostrando aplicação principal...") // Debug
+    const appContainer = document.getElementById("appContainer")
+    if (appContainer) {
+      appContainer.classList.add("active")
+      console.log("Aplicação principal ativada") // Debug
+    } else {
+      console.error("Container da aplicação não encontrado!") // Debug
+    }
   }, 4500)
 
   // Inicializar navegação
@@ -336,14 +386,6 @@ function loadGradesTable() {
   })
 }
 
-
-
-// ===== FUNÇÕES CRUD MOVIDAS PARA crud-operations.js =====
-// As funções de Create, Read, Update e Delete estão agora organizadas em arquivos separados:
-// - api-service.js: Comunicação com a API
-// - crud-operations.js: Operações CRUD das entidades
-
-
 // Sistema de busca/filtro nas tabelas
 function filterTable(tableId, searchValue) {
   const table = document.getElementById(tableId)
@@ -419,35 +461,9 @@ function generateReport(type) {
   showNotification("Relatório gerado com sucesso!", "success")
 }
 
-// Função refreshAllData movida para crud-operations.js
-
 // Funções utilitárias
 function formatDate(dateString) {
   if (!dateString) return "N/A"
   const date = new Date(dateString)
   return date.toLocaleDateString("pt-BR")
-}
-
-function showNotification(message, type) {
-  const notification = document.createElement("div")
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    background: ${type === "success" ? "var(--color-success)" : type === "error" ? "var(--color-error)" : "var(--color-primary)"};
-    color: white;
-    border-radius: var(--radius-md);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
-  `
-  notification.textContent = message
-  document.body.appendChild(notification)
-
-  setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease"
-    setTimeout(() => notification.remove(), 300)
-  }, 3000)
 }

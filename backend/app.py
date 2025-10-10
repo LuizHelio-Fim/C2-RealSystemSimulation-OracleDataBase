@@ -13,7 +13,7 @@ from controllers import (
 )
 
 app = Flask(__name__)
-CORS(app)  # Permite requisições de qualquer origem (para desenvolvimento)
+CORS(app)
 
 @app.route("/")
 def home():
