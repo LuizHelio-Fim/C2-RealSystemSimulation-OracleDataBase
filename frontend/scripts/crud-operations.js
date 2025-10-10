@@ -538,41 +538,153 @@ async function refreshAllData() {
 // Função auxiliar para mostrar formulários de edição/criação
 function showEditForm(title, fields) {
   return new Promise((resolve) => {
-    // Esta função será implementada junto com o sistema de modais
-    // Por enquanto, vamos usar um prompt simples como fallback
-    const result = {};
-    let valid = true;
+    // Criar modal dinâmico
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
     
-    for (const field of fields) {
+    let formFields = '';
+    fields.forEach(field => {
       if (field.type === 'select') {
-        const options = field.options.map((opt, idx) => `${idx + 1}: ${opt}`).join('\n');
-        const input = prompt(`${title}\n${field.label}:\nOpções:\n${options}\nEscolha um número:`, field.value || '');
-        if (input === null) {
-          valid = false;
-          break;
-        }
-        const optionIndex = parseInt(input) - 1;
-        if (optionIndex >= 0 && optionIndex < field.options.length) {
-          result[field.name] = field.options[optionIndex];
-        } else {
-          result[field.name] = input;
-        }
+        let options = field.options.map(opt => 
+          `<option value="${opt}" ${field.value === opt ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+        formFields += `
+          <div class="form-group">
+            <label for="${field.name}">${field.label}${field.required ? ' *' : ''}:</label>
+            <select id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''}>
+              ${options}
+            </select>
+          </div>
+        `;
       } else {
-        const input = prompt(`${title}\n${field.label}:`, field.value || '');
-        if (input === null) {
-          valid = false;
-          break;
-        }
-        if (field.required && !input.trim()) {
-          alert(`Campo ${field.label} é obrigatório!`);
-          valid = false;
-          break;
-        }
-        result[field.name] = input;
+        formFields += `
+          <div class="form-group">
+            <label for="${field.name}">${field.label}${field.required ? ' *' : ''}:</label>
+            <input type="${field.type}" 
+                   id="${field.name}" 
+                   name="${field.name}" 
+                   value="${field.value || ''}"
+                   ${field.required ? 'required' : ''}
+                   ${field.type === 'email' ? 'pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$"' : ''}
+                   ${field.type === 'number' ? 'min="1"' : ''}
+                   ${field.name === 'cpf' ? 'pattern="[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]{2}|[0-9]{11}" title="CPF deve ter formato: 123.456.789-01 ou 12345678901"' : ''}
+                   ${field.name === 'periodo' ? 'min="1" max="12"' : ''}
+                   ${field.name === 'carga_horaria_total' || field.name === 'carga_horaria' ? 'min="1" max="9999"' : ''}>
+          </div>
+        `;
       }
-    }
+    });
     
-    resolve(valid ? result : null);
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>${title}</h2>
+          <span class="close" onclick="this.closest('.modal').remove(); arguments[0].resolve(null);">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="editForm" novalidate>
+            ${formFields}
+            <div class="form-validation-info">
+              <small>* Campos obrigatórios</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove(); arguments[0].resolve(null);">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="submitForm(this, arguments[0].resolve)">Salvar</button>
+        </div>
+      </div>
+    `;
+    
+    // Adicionar ao container de modais
+    const modalContainer = document.getElementById('modalContainer') || document.body;
+    modalContainer.appendChild(modal);
+    
+    // Função para validar e submeter formulário
+    window.submitForm = function(button, resolveCallback) {
+      const form = document.getElementById('editForm');
+      const formData = new FormData(form);
+      const result = {};
+      let isValid = true;
+      let errors = [];
+      
+      // Validação customizada
+      fields.forEach(field => {
+        const value = formData.get(field.name);
+        result[field.name] = value;
+        
+        // Validação de campos obrigatórios
+        if (field.required && (!value || value.trim() === '')) {
+          isValid = false;
+          errors.push(`Campo "${field.label}" é obrigatório`);
+          return;
+        }
+        
+        // Validações específicas por tipo de campo
+        if (value && value.trim()) {
+          switch (field.name) {
+            case 'email':
+              const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+              if (!emailRegex.test(value)) {
+                isValid = false;
+                errors.push('Email deve ter um formato válido');
+              }
+              break;
+            case 'cpf':
+              const cpfClean = value.replace(/[^\d]/g, '');
+              if (cpfClean.length !== 11) {
+                isValid = false;
+                errors.push('CPF deve ter 11 dígitos');
+              }
+              break;
+            case 'periodo':
+              const periodo = parseInt(value);
+              if (periodo < 1 || periodo > 12) {
+                isValid = false;
+                errors.push('Período deve ser entre 1 e 12');
+              }
+              break;
+            case 'carga_horaria_total':
+            case 'carga_horaria':
+              const carga = parseInt(value);
+              if (carga < 1 || carga > 9999) {
+                isValid = false;
+                errors.push('Carga horária deve ser entre 1 e 9999 horas');
+              }
+              break;
+          }
+        }
+      });
+      
+      if (isValid) {
+        modal.remove();
+        resolveCallback(result);
+      } else {
+        // Mostrar erros de validação
+        let existingAlert = modal.querySelector('.validation-alert');
+        if (existingAlert) existingAlert.remove();
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'validation-alert alert alert-danger';
+        alertDiv.innerHTML = `
+          <strong>Erro de validação:</strong>
+          <ul>
+            ${errors.map(error => `<li>${error}</li>`).join('')}
+          </ul>
+        `;
+        modal.querySelector('.modal-body').insertBefore(alertDiv, modal.querySelector('form'));
+      }
+    };
+    
+    // Focar no primeiro campo
+    setTimeout(() => {
+      const firstInput = modal.querySelector('input, select');
+      if (firstInput) firstInput.focus();
+    }, 100);
+    
+    // Salvar referência da função resolve para os event handlers
+    modal.resolve = resolve;
   });
 }
 
@@ -609,6 +721,20 @@ async function updateCourse(id, courseData) {
     updateDashboard();
   } catch (error) {
     console.error('Erro ao atualizar curso:', error);
+    throw error;
+  }
+}
+
+async function updateSubject(id, subjectData) {
+  try {
+    // Subjects têm chave composta, o id vem como 'id_materia,id_curso'
+    const [id_materia, id_curso] = id.split(',');
+    await apiService.updateSubject(id_materia, id_curso, subjectData);
+    await dataManager.loadSubjects();
+    loadSubjectsTable();
+    updateDashboard();
+  } catch (error) {
+    console.error('Erro ao atualizar matéria:', error);
     throw error;
   }
 }

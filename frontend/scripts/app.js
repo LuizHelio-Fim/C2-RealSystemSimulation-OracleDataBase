@@ -212,7 +212,14 @@ function loadStudentsTable() {
     return
   }
 
-  appState.students.forEach((student) => {
+  // Ordenar por ID (matrícula) em ordem decrescente
+  const sortedStudents = [...appState.students].sort((a, b) => {
+    const idA = parseInt(a.matricula || a.id || 0);
+    const idB = parseInt(b.matricula || b.id || 0);
+    return idB - idA;
+  });
+
+  sortedStudents.forEach((student) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${student.matricula || student.id}</td>
@@ -239,20 +246,26 @@ function loadCoursesTable() {
   tbody.innerHTML = ""
 
   if (appState.courses.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem;">Nenhum curso cadastrado</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem;">Nenhum curso cadastrado</td></tr>'
     return
   }
 
-  appState.courses.forEach((course) => {
+  // Ordenar por ID em ordem decrescente
+  const sortedCourses = [...appState.courses].sort((a, b) => {
+    const idA = parseInt(a.id || 0);
+    const idB = parseInt(b.id || 0);
+    return idB - idA;
+  });
+
+  sortedCourses.forEach((course) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${course.id}</td>
-      <td>${course.nome}</td>
-      <td>${course.codigo}</td>
-      <td>${course.carga_horaria}h</td>
+      <td>${course.nome || 'N/A'}</td>
+      <td>${course.carga_horaria_total || 'N/A'}h</td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editCourse(${course.id})" title="Editar">✏️</button>
+          <button class="icon-btn edit" onclick="startInlineEdit('course', ${course.id}, this.closest('tr'))" title="Editar">✏️</button>
           <button class="icon-btn delete" onclick="deleteCourse(${course.id})" title="Excluir">🗑️</button>
         </div>
       </td>
@@ -271,7 +284,14 @@ function loadProfessorsTable() {
     return
   }
 
-  appState.professors.forEach((professor) => {
+  // Ordenar por ID em ordem decrescente
+  const sortedProfessors = [...appState.professors].sort((a, b) => {
+    const idA = parseInt(a.id_professor || a.id || 0);
+    const idB = parseInt(b.id_professor || b.id || 0);
+    return idB - idA;
+  });
+
+  sortedProfessors.forEach((professor) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${professor.id_professor || professor.id}</td>
@@ -298,20 +318,28 @@ function loadSubjectsTable() {
 
   if (appState.subjects.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="5" style="text-align: center; padding: 3rem;">Nenhuma matéria cadastrada</td></tr>'
+      '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma matéria cadastrada</td></tr>'
     return
   }
 
-  appState.subjects.forEach((subject) => {
+  // Ordenar por ID da matéria em ordem decrescente
+  const sortedSubjects = [...appState.subjects].sort((a, b) => {
+    const idA = parseInt(a.id_materia || 0);
+    const idB = parseInt(b.id_materia || 0);
+    return idB - idA;
+  });
+
+  sortedSubjects.forEach((subject) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${subject.id_materia}</td>
       <td>${subject.id_curso}</td>
-      <td>${subject.nome}</td>
-      <td>${subject.carga_horaria}h</td>
+      <td>${subject.periodo}º</td>
+      <td>${subject.nome || 'N/A'}</td>
+      <td>${subject.carga_horaria || 'N/A'}h</td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editSubject(${subject.id_materia}, ${subject.id_curso})" title="Editar">✏️</button>
+          <button class="icon-btn edit" onclick="startInlineEdit('subject', '${subject.id_materia},${subject.id_curso}', this.closest('tr'))" title="Editar">✏️</button>
           <button class="icon-btn delete" onclick="deleteSubject(${subject.id_materia}, ${subject.id_curso})" title="Excluir">🗑️</button>
         </div>
       </td>
@@ -330,7 +358,14 @@ function loadOffersTable() {
     return
   }
 
-  appState.offers.forEach((offer) => {
+  // Ordenar por ID em ordem decrescente
+  const sortedOffers = [...appState.offers].sort((a, b) => {
+    const idA = parseInt(a.id || 0);
+    const idB = parseInt(b.id || 0);
+    return idB - idA;
+  });
+
+  sortedOffers.forEach((offer) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${offer.id}</td>
@@ -539,10 +574,11 @@ function startInlineEdit(entityType, id, row) {
     
     // Lógica específica para cada tipo de entidade
     if (entityType === 'student') {
-      if (index === 4) { // Período
+      // Estrutura: Matrícula, CPF, Nome, Data Nasc, Telefone, Email, Período, Status, Ações
+      if (index === 6) { // Período
         inputValue = originalValue.replace('º', '');
         inputType = 'number';
-      } else if (index === 6) { // Status
+      } else if (index === 7) { // Status
         const select = document.createElement('select');
         select.innerHTML = `
           <option value="Ativo" ${originalValue === 'Ativo' ? 'selected' : ''}>Ativo</option>
@@ -554,9 +590,15 @@ function startInlineEdit(entityType, id, row) {
         cell.appendChild(select);
         cell.classList.add('editable-cell');
         return;
+      } else if (index === 5) { // Email
+        inputType = 'email';
+      } else if (index === 3) { // Data Nascimento
+        inputType = 'date';
+        inputValue = originalValue && originalValue !== 'N/A' ? formatDateForInput(originalValue) : '';
       }
     } else if (entityType === 'professor') {
-      if (index === 5) { // Status do professor
+      // Estrutura: ID, CPF, Nome, Data Nasc, Telefone, Email, Status, Ações
+      if (index === 6) { // Status do professor
         const select = document.createElement('select');
         select.innerHTML = `
           <option value="Ativo" ${originalValue === 'Ativo' ? 'selected' : ''}>Ativo</option>
@@ -567,8 +609,28 @@ function startInlineEdit(entityType, id, row) {
         cell.appendChild(select);
         cell.classList.add('editable-cell');
         return;
-      } else if (index === 2) { // Email
+      } else if (index === 5) { // Email
         inputType = 'email';
+      } else if (index === 3) { // Data Nascimento
+        inputType = 'date';
+        inputValue = originalValue && originalValue !== 'N/A' ? formatDateForInput(originalValue) : '';
+      }
+    } else if (entityType === 'course') {
+      // Estrutura: ID, Nome, Carga Horária, Ações
+      if (index === 2) { // Carga Horária
+        inputValue = originalValue.replace('h', '');
+        inputType = 'number';
+      }
+    } else if (entityType === 'subject') {
+      // Estrutura: ID Matéria, ID Curso, Período, Nome, Carga Horária, Ações
+      if (index === 2) { // Período
+        inputValue = originalValue.replace('º', '');
+        inputType = 'number';
+      } else if (index === 4) { // Carga Horária
+        inputValue = originalValue.replace('h', '');
+        inputType = 'number';
+      } else if (index === 1) { // ID Curso
+        inputType = 'number';
       }
     }
     
@@ -631,18 +693,35 @@ async function saveInlineEdit(entityType, id) {
     // Extrair dados dos inputs baseado no tipo de entidade
     if (entityType === 'student') {
       const inputs = editingRow.querySelectorAll('input, select');
-      updatedData.nome = inputs[0]?.value || '';
-      updatedData.cpf = inputs[1]?.value || '';
-      updatedData.email = inputs[2]?.value || '';
-      updatedData.periodo = inputs[3]?.value || '';
-      updatedData.status_curso = inputs[4]?.value || '';
+      updatedData.nome = inputs[2]?.value || '';  // 3ª célula - Nome
+      updatedData.cpf = inputs[1]?.value || '';   // 2ª célula - CPF
+      updatedData.telefone = inputs[4]?.value || ''; // 5ª célula - Telefone
+      updatedData.email = inputs[5]?.value || '';  // 6ª célula - Email
+      updatedData.periodo = inputs[6]?.value || ''; // 7ª célula - Período
+      updatedData.status_curso = inputs[7]?.value || ''; // 8ª célula - Status
+      if (inputs[3]?.value) { // Data Nascimento se fornecida
+        updatedData.data_nascimento = inputs[3].value;
+      }
     } else if (entityType === 'professor') {
       const inputs = editingRow.querySelectorAll('input, select');
-      updatedData.nome = inputs[0]?.value || '';
-      updatedData.cpf = inputs[1]?.value || '';
-      updatedData.email = inputs[2]?.value || '';
-      updatedData.telefone = inputs[3]?.value || '';
-      updatedData.status = inputs[4]?.value || '';
+      updatedData.nome = inputs[2]?.value || '';  // 3ª célula - Nome
+      updatedData.cpf = inputs[1]?.value || '';   // 2ª célula - CPF
+      updatedData.telefone = inputs[4]?.value || ''; // 5ª célula - Telefone
+      updatedData.email = inputs[5]?.value || '';  // 6ª célula - Email
+      updatedData.status = inputs[6]?.value || ''; // 7ª célula - Status
+      if (inputs[3]?.value) { // Data Nascimento se fornecida
+        updatedData.data_nascimento = inputs[3].value;
+      }
+    } else if (entityType === 'course') {
+      const inputs = editingRow.querySelectorAll('input');
+      updatedData.nome = inputs[1]?.value || '';  // 2ª célula - Nome
+      updatedData.carga_horaria_total = inputs[2]?.value || ''; // 3ª célula - Carga Horária
+    } else if (entityType === 'subject') {
+      const inputs = editingRow.querySelectorAll('input');
+      updatedData.id_curso = inputs[1]?.value || '';  // 2ª célula - ID Curso
+      updatedData.periodo = inputs[2]?.value || '';   // 3ª célula - Período
+      updatedData.nome = inputs[3]?.value || '';      // 4ª célula - Nome
+      updatedData.carga_horaria = inputs[4]?.value || ''; // 5ª célula - Carga Horária
     }
 
     // Chamar a função CRUD apropriada
@@ -650,6 +729,10 @@ async function saveInlineEdit(entityType, id) {
       await updateStudent(id, updatedData);
     } else if (entityType === 'professor') {
       await updateProfessor(id, updatedData);
+    } else if (entityType === 'course') {
+      await updateCourse(id, updatedData);
+    } else if (entityType === 'subject') {
+      await updateSubject(id, updatedData);
     }
 
     // Limpar estado de edição
@@ -670,6 +753,8 @@ function getCurrentEntityType() {
   if (currentSection === 'students') return 'student';
   if (currentSection === 'professors') return 'professor';
   if (currentSection === 'courses') return 'course';
+  if (currentSection === 'subjects') return 'subject';
+  if (currentSection === 'offers') return 'offer';
   return 'unknown';
 }
 
@@ -680,4 +765,17 @@ function getEntityIdFromRow(row) {
 
 function capitalizeFirst(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatDateForInput(dateStr) {
+  if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Converter data do formato brasileiro (DD/MM/YYYY) para formato ISO (YYYY-MM-DD)
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  return dateStr;
 }
