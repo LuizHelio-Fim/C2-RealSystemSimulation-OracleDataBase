@@ -15,14 +15,28 @@ async function addStudent() {
     ]);
 
     if (formData) {
-      await apiService.createStudent(formData);
+      console.log('Dados do formulário recebidos:', formData); // Debug
+      
+      // Teste simples sem backend
+      alert('Dados recebidos do formulário: ' + JSON.stringify(formData, null, 2));
+      showNotification("Teste: Dados do formulário recebidos com sucesso!", "success");
+      
+      // Código original comentado para teste
+      /*
+      const response = await apiService.createStudent(formData);
+      console.log('Resposta da API:', response); // Debug
       await dataManager.loadStudents();
       loadStudentsTable();
       updateDashboard();
       showNotification("Aluno criado com sucesso!", "success");
+      */
+    } else {
+      console.log('Nenhum dado recebido do formulário'); // Debug
+      alert('Nenhum dado foi recebido do formulário!');
     }
   } catch (error) {
     console.error('Erro ao criar aluno:', error);
+    showNotification(`Erro ao criar aluno: ${error.message}`, "error");
   }
 }
 
@@ -580,7 +594,7 @@ function showEditForm(title, fields) {
       <div class="modal-content">
         <div class="modal-header">
           <h2>${title}</h2>
-          <span class="close" onclick="this.closest('.modal').remove(); arguments[0].resolve(null);">&times;</span>
+          <span class="close" onclick="cancelModal();">&times;</span>
         </div>
         <div class="modal-body">
           <form id="editForm" novalidate>
@@ -591,8 +605,8 @@ function showEditForm(title, fields) {
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove(); arguments[0].resolve(null);">Cancelar</button>
-          <button type="button" class="btn btn-primary" onclick="submitForm(this, arguments[0].resolve)">Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="cancelModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="submitModalForm()">Salvar</button>
         </div>
       </div>
     `;
@@ -601,13 +615,34 @@ function showEditForm(title, fields) {
     const modalContainer = document.getElementById('modalContainer') || document.body;
     modalContainer.appendChild(modal);
     
+    // Funções globais para gerenciar o modal
+    window.currentModal = modal;
+    window.currentModalResolve = resolve;
+    
+    window.cancelModal = function() {
+      if (window.currentModal) {
+        window.currentModal.remove();
+        window.currentModalResolve(null);
+        window.currentModal = null;
+        window.currentModalResolve = null;
+      }
+    };
+    
+    window.submitModalForm = function() {
+      submitForm();
+    };
+    
     // Função para validar e submeter formulário
-    window.submitForm = function(button, resolveCallback) {
+    function submitForm() {
+      console.log('submitForm chamada'); // Debug
       const form = document.getElementById('editForm');
       const formData = new FormData(form);
       const result = {};
       let isValid = true;
       let errors = [];
+      
+      console.log('Form encontrado:', form); // Debug
+      console.log('FormData:', formData); // Debug
       
       // Validação customizada
       fields.forEach(field => {
@@ -657,10 +692,16 @@ function showEditForm(title, fields) {
         }
       });
       
+      console.log('Validação concluída. isValid:', isValid, 'result:', result); // Debug
+      
       if (isValid) {
-        modal.remove();
-        resolveCallback(result);
+        console.log('Dados válidos, chamando resolve'); // Debug
+        window.currentModal.remove();
+        window.currentModalResolve(result);
+        window.currentModal = null;
+        window.currentModalResolve = null;
       } else {
+        console.log('Dados inválidos, erros:', errors); // Debug
         // Mostrar erros de validação
         let existingAlert = modal.querySelector('.validation-alert');
         if (existingAlert) existingAlert.remove();
@@ -673,9 +714,9 @@ function showEditForm(title, fields) {
             ${errors.map(error => `<li>${error}</li>`).join('')}
           </ul>
         `;
-        modal.querySelector('.modal-body').insertBefore(alertDiv, modal.querySelector('form'));
+        window.currentModal.querySelector('.modal-body').insertBefore(alertDiv, window.currentModal.querySelector('form'));
       }
-    };
+    }
     
     // Focar no primeiro campo
     setTimeout(() => {
@@ -683,8 +724,7 @@ function showEditForm(title, fields) {
       if (firstInput) firstInput.focus();
     }, 100);
     
-    // Salvar referência da função resolve para os event handlers
-    modal.resolve = resolve;
+
   });
 }
 
