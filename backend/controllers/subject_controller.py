@@ -19,13 +19,12 @@ def create_subject():
         periodo = data.get('periodo')
         nome = data.get('nome')
         carga_horaria = data.get('carga_horaria')
-        media_aprovacao = data.get('media_aprovacao')
         
         # Todos estes campos são NOT NULL no banco MATERIA
-        if not all([id_materia is not None, id_curso is not None, periodo is not None, nome, carga_horaria is not None, media_aprovacao is not None]):
+        if not all([id_materia is not None, id_curso is not None, periodo is not None, nome, carga_horaria is not None]):
             return jsonify({
                 'success': False,
-                'message': 'Campos obrigatórios: id_materia, id_curso, periodo, nome, carga_horaria, media_aprovacao'
+                'message': 'Campos obrigatórios: id_materia, id_curso, periodo, nome, carga_horaria'
             }), 400
 
         conn = get_connection()
@@ -42,7 +41,7 @@ def create_subject():
                 }), 404
 
             # VULNERÁVEL: Usando concatenação de strings
-            sql = "INSERT INTO MATERIA (ID_MATERIA, ID_CURSO, PERIODO, NOME, CARGA_HORARIA, MEDIA_APROVACAO) VALUES (" + str(id_materia) + ", " + str(id_curso) + ", " + str(periodo) + ", '" + str(nome) + "', " + str(carga_horaria) + ", " + str(media_aprovacao) + ")"
+            sql = "INSERT INTO MATERIA (ID_MATERIA, ID_CURSO, PERIODO, NOME, CARGA_HORARIA) VALUES (" + str(id_materia) + ", " + str(id_curso) + ", " + str(periodo) + ", '" + str(nome) + "', " + str(carga_horaria) + ")"
             cur.execute(sql)
             conn.commit()
             
@@ -74,7 +73,7 @@ def list_subjects():
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, m.MEDIA_APROVACAO, c.NOME as CURSO_NOME FROM MATERIA m JOIN CURSO c ON m.ID_CURSO = c.ID ORDER BY c.NOME, m.PERIODO, m.NOME"
+        sql = "SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME FROM MATERIA m JOIN CURSO c ON m.ID_CURSO = c.ID ORDER BY c.NOME, m.PERIODO, m.NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         subjects = []
@@ -85,8 +84,7 @@ def list_subjects():
                 'periodo': row[2],
                 'nome': row[3],
                 'carga_horaria': row[4],
-                'media_aprovacao': row[5],
-                'curso_nome': row[6]
+                'curso_nome': row[5]
             })
         return jsonify({
             'success': True,
@@ -108,7 +106,7 @@ def get_subject_by_id(subject_id, course_id):
     cur = conn.cursor()
     try:
         sql = """
-        SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, m.MEDIA_APROVACAO, c.NOME as CURSO_NOME
+        SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME
         FROM MATERIA m
         JOIN CURSO c ON m.ID_CURSO = c.ID
         WHERE m.ID_MATERIA = """ + str(subject_id) + """ AND m.ID_CURSO = """ + str(course_id) + """
@@ -122,8 +120,7 @@ def get_subject_by_id(subject_id, course_id):
                 'periodo': row[2],
                 'nome': row[3],
                 'carga_horaria': row[4],
-                'media_aprovacao': row[5],
-                'curso_nome': row[6]
+                'curso_nome': row[5]
             }
             return jsonify({
                 'success': True,
@@ -171,10 +168,6 @@ def update_subject(subject_id, course_id):
             if 'carga_horaria' in data:
                 update_fields.append("CARGA_HORARIA = :carga_horaria")
                 params['carga_horaria'] = data['carga_horaria']
-                
-            if 'media_aprovacao' in data:
-                update_fields.append("MEDIA_APROVACAO = :media_aprovacao")
-                params['media_aprovacao'] = data['media_aprovacao']
 
             if not update_fields:
                 return jsonify({'error': 'Nenhum campo para atualizar foi fornecido'}), 400
@@ -233,7 +226,7 @@ def get_subjects_by_course(course_id):
     cur = conn.cursor()
     try:
         sql = """
-        SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, m.MEDIA_APROVACAO, c.NOME as CURSO_NOME
+        SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME
         FROM MATERIA m
         JOIN CURSO c ON m.ID_CURSO = c.ID
         WHERE m.ID_CURSO = """ + str(course_id) + """
@@ -249,8 +242,7 @@ def get_subjects_by_course(course_id):
                 'periodo': row[2],
                 'nome': row[3],
                 'carga_horaria': row[4],
-                'media_aprovacao': row[5],
-                'curso_nome': row[6]
+                'curso_nome': row[5]
             })
         return jsonify(subjects), 200
     except Exception as e:

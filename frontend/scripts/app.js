@@ -75,6 +75,7 @@ const appState = {
   evaluations: [],
   enrollments: [],
   grades: [],
+  currentSection: 'dashboard'
 }
 
 // Inicialização da aplicação
@@ -184,19 +185,21 @@ function switchView(viewName) {
   const targetView = document.getElementById(viewName + "View")
   if (targetView) {
     targetView.style.display = "block"
+    // Definir a seção atual para edição inline
+    appState.currentSection = viewName;
   }
 }
 
 // Atualizar estatísticas do dashboard
 function updateDashboard() {
-  document.getElementById("dashStudents").textContent = dataManager.students.length
-  document.getElementById("dashCourses").textContent = dataManager.courses.length
-  document.getElementById("dashProfessors").textContent = dataManager.professors.length
-  document.getElementById("dashSubjects").textContent = dataManager.subjects.length
-  document.getElementById("dashOffers").textContent = dataManager.offers.length
-  document.getElementById("dashEvaluations").textContent = dataManager.evaluations.length
-  document.getElementById("dashEnrollments").textContent = dataManager.enrollments.length
-  document.getElementById("dashGrades").textContent = dataManager.grades.length
+  document.getElementById("dashStudents").textContent = appState.students.length
+  document.getElementById("dashCourses").textContent = appState.courses.length
+  document.getElementById("dashProfessors").textContent = appState.professors.length
+  document.getElementById("dashSubjects").textContent = appState.subjects.length
+  document.getElementById("dashOffers").textContent = appState.offers.length
+  document.getElementById("dashEvaluations").textContent = appState.evaluations.length
+  document.getElementById("dashEnrollments").textContent = appState.enrollments.length
+  document.getElementById("dashGrades").textContent = appState.grades.length
 }
 
 // Funções de carregamento de tabelas
@@ -213,11 +216,12 @@ function loadStudentsTable() {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${student.matricula || student.id}</td>
-      <td>${student.nome || 'N/A'}</td>
       <td>${student.cpf || 'N/A'}</td>
+      <td>${student.nome || 'N/A'}</td>
+      <td>${student.data_nasc ? formatDate(student.data_nasc) : 'N/A'}</td>
+      <td>${student.telefone || 'N/A'}</td>
       <td>${student.email || 'N/A'}</td>
       <td>${student.periodo ? student.periodo + 'º' : 'N/A'}</td>
-      <td>${student.id_curso || 'N/A'}</td>
       <td><span class="status-badge ${student.status_curso ? student.status_curso.toLowerCase() : 'ativo'}">${student.status_curso || 'Ativo'}</span></td>
       <td>
         <div class="table-actions">
@@ -263,7 +267,7 @@ function loadProfessorsTable() {
 
   if (appState.professors.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="7" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
+      '<tr><td colspan="8" style="text-align: center; padding: 3rem;">Nenhum professor cadastrado</td></tr>'
     return
   }
 
@@ -271,10 +275,11 @@ function loadProfessorsTable() {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${professor.id_professor || professor.id}</td>
-      <td>${professor.nome || 'N/A'}</td>
       <td>${professor.cpf || 'N/A'}</td>
+      <td>${professor.nome || 'N/A'}</td>
+      <td>${professor.data_nasc ? formatDate(professor.data_nasc) : 'N/A'}</td>
+      <td>${professor.telefone || 'N/A'}</td>
       <td>${professor.email || 'N/A'}</td>
-      <td>${professor.telefone || '-'}</td>
       <td><span class="status-badge ${professor.status ? professor.status.toLowerCase() : 'ativo'}">${professor.status || 'Ativo'}</span></td>
       <td>
         <div class="table-actions">
@@ -319,13 +324,13 @@ function loadOffersTable() {
   const tbody = document.getElementById("offersTableBody")
   tbody.innerHTML = ""
 
-  if (dataManager.offers.length === 0) {
+  if (appState.offers.length === 0) {
     tbody.innerHTML =
       '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma oferta cadastrada</td></tr>'
     return
   }
 
-  dataManager.offers.forEach((offer) => {
+  appState.offers.forEach((offer) => {
     const row = document.createElement("tr")
     row.innerHTML = `
       <td>${offer.id}</td>

@@ -4,7 +4,6 @@
 async function addStudent() {
   try {
     const formData = await showEditForm('Adicionar Aluno', [
-      { name: 'matricula', label: 'Matrícula', type: 'text', required: true },
       { name: 'nome', label: 'Nome', type: 'text', required: true },
       { name: 'cpf', label: 'CPF', type: 'text', required: true },
       { name: 'email', label: 'Email', type: 'email', required: true },
@@ -162,7 +161,7 @@ async function addProfessor() {
 
 async function editProfessor(id) {
   try {
-    const professor = dataManager.professors.find(p => p.id_professor == id);
+    const professor = appState.professors.find(p => p.id_professor == id);
     if (!professor) {
       showNotification("Professor não encontrado!", "error");
       return;
@@ -209,8 +208,8 @@ async function deleteProfessor(id) {
 async function addSubject() {
   try {
     const formData = await showEditForm('Adicionar Matéria', [
-      { name: 'id_materia', label: 'ID da Matéria', type: 'number', required: true },
       { name: 'id_curso', label: 'ID do Curso', type: 'number', required: true },
+      { name: 'periodo', label: 'Período', type: 'number', required: true },
       { name: 'nome', label: 'Nome', type: 'text', required: true },
       { name: 'carga_horaria', label: 'Carga Horária', type: 'number', required: true }
     ]);
