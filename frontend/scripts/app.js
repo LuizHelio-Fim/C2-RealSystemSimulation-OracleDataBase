@@ -690,31 +690,44 @@ async function saveInlineEdit(entityType, id) {
     // Extrair dados dos inputs baseado no tipo de entidade
     if (entityType === 'student') {
       const inputs = editingRow.querySelectorAll('input, select');
-      updatedData.nome = inputs[2]?.value || '';  // 3ª célula - Nome
-      updatedData.cpf = inputs[1]?.value || '';   // 2ª célula - CPF
-      updatedData.telefone = inputs[4]?.value || ''; // 5ª célula - Telefone
-      updatedData.email = inputs[5]?.value || '';  // 6ª célula - Email
-      updatedData.periodo = inputs[6]?.value || ''; // 7ª célula - Período
-      updatedData.status_curso = inputs[7]?.value || ''; // 8ª célula - Status
-      if (inputs[3]?.value) { // Data Nascimento se fornecida
-        // Converter de YYYY-MM-DD para DD/MM/YYYY
-        const dateValue = inputs[3].value;
+      console.log('Dados do student - inputs encontrados:', inputs.length); // Debug
+      
+      // Estrutura: ID(0), CPF(1), Nome(2), Data_Nasc(3), Telefone(4), Email(5), Período(6), Status(7), Ações(8)
+      updatedData.cpf = inputs[0]?.value || '';   // 1ª input - CPF
+      updatedData.nome = inputs[1]?.value || '';  // 2ª input - Nome
+      updatedData.telefone = inputs[3]?.value || ''; // 4ª input - Telefone  
+      updatedData.email = inputs[4]?.value || '';  // 5ª input - Email
+      updatedData.periodo = inputs[5]?.value || ''; // 6ª input - Período
+      updatedData.status_curso = inputs[6]?.value || ''; // 7ª input - Status (select)
+      
+      if (inputs[2]?.value) { // 3ª input - Data Nascimento se fornecida
+        const dateValue = inputs[2].value;
         const formattedDate = convertDateToUserFormat(dateValue);
         updatedData.data_nasc = formattedDate;
+        console.log('Data do student convertida:', formattedDate); // Debug
       }
+      
+      console.log('Dados finais do student:', updatedData); // Debug
+      
     } else if (entityType === 'professor') {
       const inputs = editingRow.querySelectorAll('input, select');
-      updatedData.nome = inputs[2]?.value || '';  // 3ª célula - Nome
-      updatedData.cpf = inputs[1]?.value || '';   // 2ª célula - CPF
-      updatedData.telefone = inputs[4]?.value || ''; // 5ª célula - Telefone
-      updatedData.email = inputs[5]?.value || '';  // 6ª célula - Email
-      updatedData.status = inputs[6]?.value || ''; // 7ª célula - Status
-      if (inputs[3]?.value) { // Data Nascimento se fornecida
-        // Converter de YYYY-MM-DD para DD/MM/YYYY
-        const dateValue = inputs[3].value;
+      console.log('Dados do professor - inputs encontrados:', inputs.length); // Debug
+      
+      // Estrutura: ID(0), CPF(1), Nome(2), Data_Nasc(3), Telefone(4), Email(5), Status(6), Ações(7)
+      updatedData.cpf = inputs[0]?.value || '';   // 1ª input - CPF
+      updatedData.nome = inputs[1]?.value || '';  // 2ª input - Nome
+      updatedData.telefone = inputs[3]?.value || ''; // 4ª input - Telefone
+      updatedData.email = inputs[4]?.value || '';  // 5ª input - Email
+      updatedData.status = inputs[5]?.value || ''; // 6ª input - Status (select)
+      
+      if (inputs[2]?.value) { // 3ª input - Data Nascimento se fornecida
+        const dateValue = inputs[2].value;
         const formattedDate = convertDateToUserFormat(dateValue);
         updatedData.data_nasc = formattedDate;
+        console.log('Data do professor convertida:', formattedDate); // Debug
       }
+      
+      console.log('Dados finais do professor:', updatedData); // Debug
     } else if (entityType === 'course') {
       const inputs = editingRow.querySelectorAll('input');
       updatedData.nome = inputs[0]?.value || '';  // 2ª célula - Nome

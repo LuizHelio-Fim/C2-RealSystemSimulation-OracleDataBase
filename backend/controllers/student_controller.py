@@ -224,6 +224,8 @@ def update_student(student_id):
                 'success': False,
                 'message': 'Dados JSON são obrigatórios'
             }), 400
+            
+        print(f"Dados recebidos para atualizar student {student_id}: {data}")  # Debug
 
         conn = get_connection()
         cur = conn.cursor()
@@ -295,6 +297,7 @@ def update_student(student_id):
                 }), 400
 
             sql = "UPDATE ALUNO SET " + ", ".join(update_parts) + " WHERE MATRICULA = " + str(student_id)
+            print(f"SQL de atualização do estudante: {sql}")  # Debug
             cur.execute(sql)
             conn.commit()
             
