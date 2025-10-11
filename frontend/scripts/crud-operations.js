@@ -2,36 +2,60 @@
 
 // Função auxiliar para formatar datas para inputs de formulário
 function formatDateForInputForm(dateStr) {
+  console.log('formatDateForInputForm input:', dateStr); // Debug
+  
   if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Se já está no formato YYYY-MM-DD, retornar como está
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    console.log('Data já em formato ISO:', dateStr); // Debug
+    return dateStr;
+  }
   
   // Se for formato DD/MM/YYYY, converter para YYYY-MM-DD
   if (dateStr.includes('/')) {
     const parts = dateStr.split('/');
     if (parts.length === 3) {
       const [day, month, year] = parts;
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const result = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      console.log('Data convertida para ISO:', result); // Debug
+      return result;
     }
   }
   
-  // Se já for ISO (YYYY-MM-DD) ou similar, apenas limpar
+  // Se for formato ISO com timestamp (YYYY-MM-DDTHH:MM:SS), apenas pegar a parte da data
   if (dateStr.includes('T')) {
-    return dateStr.split('T')[0];
+    const result = dateStr.split('T')[0];
+    console.log('Data extraída de timestamp:', result); // Debug
+    return result;
   }
   
+  console.log('Data retornada original:', dateStr); // Debug
   return dateStr;
 }
 
 // Função auxiliar para converter data de YYYY-MM-DD para DD/MM/YYYY
 function convertDateToUserFormat(dateStr) {
+  console.log('convertDateToUserFormat input:', dateStr); // Debug
+  
   if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Se já está no formato DD/MM/YYYY, retornar como está
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    console.log('Data já em formato brasileiro:', dateStr); // Debug
+    return dateStr;
+  }
   
   // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     const [year, month, day] = parts;
-    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    const result = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    console.log('Data convertida para brasileiro:', result); // Debug
+    return result;
   }
   
+  console.log('Data não convertida, retornando original:', dateStr); // Debug
   return dateStr;
 }
 
@@ -539,7 +563,9 @@ function showEditForm(title, fields) {
         
         // Processar datas: converter de YYYY-MM-DD para DD/MM/YYYY
         if (field.type === 'date' && value && value.trim() !== '') {
+          console.log(`Processando data do campo ${field.name}:`, value); // Debug
           value = convertDateToUserFormat(value);
+          console.log(`Data processada para ${field.name}:`, value); // Debug
         }
         
         result[field.name] = value;

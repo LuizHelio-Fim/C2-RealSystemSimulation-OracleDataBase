@@ -199,11 +199,20 @@ def update_professor(professor_id):
                 update_parts.append("NOME = '" + str(data['nome']) + "'")
                 
             if 'data_nasc' in data:
-                formatted_date = format_date_for_oracle(data['data_nasc']) if data['data_nasc'] else None
-                if formatted_date:
-                    update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
-                else:
-                    update_parts.append("DATA_NASC = NULL")
+                try:
+                    print(f"Data professor recebida: '{data['data_nasc']}' (tipo: {type(data['data_nasc'])})")  # Debug
+                    formatted_date = format_date_for_oracle(data['data_nasc']) if data['data_nasc'] else None
+                    print(f"Data professor formatada: '{formatted_date}'")  # Debug
+                    if formatted_date:
+                        update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
+                    else:
+                        update_parts.append("DATA_NASC = NULL")
+                except ValueError as ve:
+                    print(f"Erro ao formatar data do professor: {str(ve)}")  # Debug
+                    return jsonify({
+                        'success': False,
+                        'message': f'Erro ao atualizar professor: {str(ve)}'
+                    }), 400
                     
             if 'telefone' in data:
                 tel_val = "NULL" if data['telefone'] is None else "'" + str(data['telefone']) + "'"

@@ -255,12 +255,15 @@ def update_student(student_id):
             data_nasc = data.get('data_nasc') or data.get('data_nascimento')
             if data_nasc is not None:
                 try:
+                    print(f"Data recebida: '{data_nasc}' (tipo: {type(data_nasc)})")  # Debug
                     formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
+                    print(f"Data formatada: '{formatted_date}'")  # Debug
                     if formatted_date:
                         update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
                     else:
                         update_parts.append("DATA_NASC = NULL")
                 except ValueError as ve:
+                    print(f"Erro ao formatar data: {str(ve)}")  # Debug
                     return jsonify({
                         'success': False,
                         'message': f'Erro ao atualizar estudante: {str(ve)}'

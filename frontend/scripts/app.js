@@ -755,27 +755,49 @@ function capitalizeFirst(str) {
 }
 
 function formatDateForInput(dateStr) {
+  console.log('formatDateForInput input:', dateStr); // Debug
+  
   if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Se já está no formato YYYY-MM-DD, retornar como está
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    console.log('Data já em formato ISO:', dateStr); // Debug
+    return dateStr;
+  }
   
   // Converter data do formato brasileiro (DD/MM/YYYY) para formato ISO (YYYY-MM-DD)
   const parts = dateStr.split('/');
   if (parts.length === 3) {
     const [day, month, year] = parts;
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    const result = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    console.log('Data convertida para ISO:', result); // Debug
+    return result;
   }
   
+  console.log('Data não pôde ser convertida, retornando original:', dateStr); // Debug
   return dateStr;
 }
 
 function convertDateToUserFormat(dateStr) {
+  console.log('convertDateToUserFormat input:', dateStr); // Debug
+  
   if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Se já está no formato DD/MM/YYYY, retornar como está
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    console.log('Data já em formato brasileiro:', dateStr); // Debug
+    return dateStr;
+  }
   
   // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
   const parts = dateStr.split('-');
   if (parts.length === 3) {
     const [year, month, day] = parts;
-    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    const result = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    console.log('Data convertida para brasileiro:', result); // Debug
+    return result;
   }
   
+  console.log('Data não pôde ser convertida, retornando original:', dateStr); // Debug
   return dateStr;
 }
