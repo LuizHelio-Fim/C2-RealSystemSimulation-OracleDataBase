@@ -1,5 +1,40 @@
 // crud-operations.js - Operações CRUD para todas as entidades
 
+// Função auxiliar para formatar datas para inputs de formulário
+function formatDateForInputForm(dateStr) {
+  if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Se for formato DD/MM/YYYY, converter para YYYY-MM-DD
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  }
+  
+  // Se já for ISO (YYYY-MM-DD) ou similar, apenas limpar
+  if (dateStr.includes('T')) {
+    return dateStr.split('T')[0];
+  }
+  
+  return dateStr;
+}
+
+// Função auxiliar para converter data de YYYY-MM-DD para DD/MM/YYYY
+function convertDateToUserFormat(dateStr) {
+  if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  
+  return dateStr;
+}
+
 // ===== STUDENTS CRUD =====
 async function addStudent() {
   try {
@@ -56,7 +91,7 @@ async function editStudent(matricula) {
       { name: 'cpf', label: 'CPF', type: 'text', value: student.cpf, required: true },
       { name: 'email', label: 'Email', type: 'email', value: student.email, required: true },
       { name: 'telefone', label: 'Telefone', type: 'text', value: student.telefone },
-      { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: student.data_nasc },
+      { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: student.data_nasc ? formatDateForInputForm(student.data_nasc) : '' },
       { name: 'periodo', label: 'Período', type: 'number', value: student.periodo, required: true },
       { name: 'id_curso', label: 'ID do Curso', type: 'number', value: student.id_curso, required: true },
       { name: 'status_curso', label: 'Status', type: 'select', value: student.status_curso, options: ['Ativo', 'Trancado', 'Formado'], required: true }
@@ -188,7 +223,7 @@ async function editProfessor(id) {
       { name: 'cpf', label: 'CPF', type: 'text', value: professor.cpf, required: true },
       { name: 'email', label: 'Email', type: 'email', value: professor.email, required: true },
       { name: 'status', label: 'Status', type: 'select', options: ['Ativo', 'Inativo', 'Afastado'], value: professor.status, required: true },
-      { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: professor.data_nasc ? professor.data_nasc.split('T')[0] : '' },
+      { name: 'data_nasc', label: 'Data Nascimento', type: 'date', value: professor.data_nasc ? formatDateForInputForm(professor.data_nasc) : '' },
       { name: 'telefone', label: 'Telefone', type: 'text', value: professor.telefone }
     ]);
 
@@ -500,7 +535,13 @@ function showEditForm(title, fields) {
       
       // Validação customizada
       fields.forEach(field => {
-        const value = formData.get(field.name);
+        let value = formData.get(field.name);
+        
+        // Processar datas: converter de YYYY-MM-DD para DD/MM/YYYY
+        if (field.type === 'date' && value && value.trim() !== '') {
+          value = convertDateToUserFormat(value);
+        }
+        
         result[field.name] = value;
         
         // Validação de campos obrigatórios

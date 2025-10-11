@@ -153,29 +153,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 
-// Animação dos números da splash screen
+// Animação dos números da splash screen com efeito escalonado
 function animateSplashStats() {
-  animateNumber("totalStudents", appState.students.length)
-  animateNumber("totalCourses", appState.courses.length)
-  animateNumber("totalProfessors", appState.professors.length)
-  animateNumber("totalSubjects", appState.subjects.length)
-  animateNumber("totalOffers", appState.offers.length)
-  animateNumber("totalEnrollments", appState.enrollments.length)
+  const stats = [
+    { id: "totalStudents", value: appState.students.length, delay: 0 },
+    { id: "totalCourses", value: appState.courses.length, delay: 200 },
+    { id: "totalProfessors", value: appState.professors.length, delay: 400 },
+    { id: "totalSubjects", value: appState.subjects.length, delay: 600 },
+    { id: "totalOffers", value: appState.offers.length, delay: 800 },
+    { id: "totalEnrollments", value: appState.enrollments.length, delay: 1000 }
+  ];
+
+  // Adicionar animação escalonada aos cards
+  stats.forEach((stat, index) => {
+    setTimeout(() => {
+      const card = document.getElementById(stat.id).closest('.stat-card');
+      if (card) {
+        card.style.animationDelay = `${index * 0.1}s`;
+      }
+      animateNumber(stat.id, stat.value, 2000);
+    }, stat.delay);
+  });
 }
 
-function animateNumber(elementId, target) {
-  const element = document.getElementById(elementId)
-  let current = 0
-  const increment = target / 50
-  const timer = setInterval(() => {
-    current += increment
-    if (current >= target) {
-      element.textContent = target
-      clearInterval(timer)
+function animateNumber(elementId, target, duration = 2000) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+  
+  const startTime = performance.now();
+  const startValue = 0;
+  
+  function updateNumber(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Função de easing cubic-bezier para suavidade
+    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+    const current = Math.floor(startValue + (target - startValue) * easeOutQuart);
+    
+    element.textContent = current;
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateNumber);
     } else {
-      element.textContent = Math.floor(current)
+      element.textContent = target;
     }
-  }, 30)
+  }
+  
+  requestAnimationFrame(updateNumber);
 }
 
 // Sistema de navegação
@@ -656,7 +681,10 @@ async function saveInlineEdit(entityType, id) {
       updatedData.periodo = inputs[6]?.value || ''; // 7ª célula - Período
       updatedData.status_curso = inputs[7]?.value || ''; // 8ª célula - Status
       if (inputs[3]?.value) { // Data Nascimento se fornecida
-        updatedData.data_nascimento = inputs[3].value;
+        // Converter de YYYY-MM-DD para DD/MM/YYYY
+        const dateValue = inputs[3].value;
+        const formattedDate = convertDateToUserFormat(dateValue);
+        updatedData.data_nasc = formattedDate;
       }
     } else if (entityType === 'professor') {
       const inputs = editingRow.querySelectorAll('input, select');
@@ -666,12 +694,15 @@ async function saveInlineEdit(entityType, id) {
       updatedData.email = inputs[5]?.value || '';  // 6ª célula - Email
       updatedData.status = inputs[6]?.value || ''; // 7ª célula - Status
       if (inputs[3]?.value) { // Data Nascimento se fornecida
-        updatedData.data_nascimento = inputs[3].value;
+        // Converter de YYYY-MM-DD para DD/MM/YYYY
+        const dateValue = inputs[3].value;
+        const formattedDate = convertDateToUserFormat(dateValue);
+        updatedData.data_nasc = formattedDate;
       }
     } else if (entityType === 'course') {
       const inputs = editingRow.querySelectorAll('input');
-      updatedData.nome = inputs[1]?.value || '';  // 2ª célula - Nome
-      updatedData.carga_horaria_total = inputs[2]?.value || ''; // 3ª célula - Carga Horária
+      updatedData.nome = inputs[0]?.value || '';  // 2ª célula - Nome
+      updatedData.carga_horaria_total = inputs[1]?.value || ''; // 3ª célula - Carga Horária
     } else if (entityType === 'subject') {
       const inputs = editingRow.querySelectorAll('input');
       updatedData.id_curso = inputs[1]?.value || '';  // 2ª célula - ID Curso
@@ -731,6 +762,19 @@ function formatDateForInput(dateStr) {
   if (parts.length === 3) {
     const [day, month, year] = parts;
     return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  return dateStr;
+}
+
+function convertDateToUserFormat(dateStr) {
+  if (!dateStr || dateStr === 'N/A') return '';
+  
+  // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
   }
   
   return dateStr;
