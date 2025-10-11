@@ -16,10 +16,19 @@ function formatDateForInputForm(dateStr) {
   if (dateStr.includes('/')) {
     const parts = dateStr.split('/');
     if (parts.length === 3) {
+      // Assumir sempre DD/MM/YYYY para dados vindos do banco
       const [day, month, year] = parts;
-      const result = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      console.log('Data convertida para ISO:', result); // Debug
-      return result;
+      
+      // Validar se os valores fazem sentido
+      const dayNum = parseInt(day, 10);
+      const monthNum = parseInt(month, 10);
+      const yearNum = parseInt(year, 10);
+      
+      if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12 && yearNum > 1900) {
+        const result = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        console.log('Data convertida de DD/MM/YYYY para ISO:', result); // Debug
+        return result;
+      }
     }
   }
   
@@ -30,33 +39,43 @@ function formatDateForInputForm(dateStr) {
     return result;
   }
   
-  console.log('Data retornada original:', dateStr); // Debug
-  return dateStr;
+  console.log('Data não pôde ser processada, retornando vazio'); // Debug
+  return '';
 }
 
 // Função auxiliar para converter data de YYYY-MM-DD para DD/MM/YYYY
 function convertDateToUserFormat(dateStr) {
   console.log('convertDateToUserFormat input:', dateStr); // Debug
   
-  if (!dateStr || dateStr === 'N/A') return '';
+  if (!dateStr || dateStr === 'N/A' || dateStr.trim() === '') return '';
   
   // Se já está no formato DD/MM/YYYY, retornar como está
-  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+  if (dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
     console.log('Data já em formato brasileiro:', dateStr); // Debug
     return dateStr;
   }
   
   // Converter data do formato ISO (YYYY-MM-DD) para formato brasileiro (DD/MM/YYYY)
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    const result = `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
-    console.log('Data convertida para brasileiro:', result); // Debug
-    return result;
+  if (dateStr.includes('-')) {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      
+      // Validar os componentes da data
+      const yearNum = parseInt(year, 10);
+      const monthNum = parseInt(month, 10);
+      const dayNum = parseInt(day, 10);
+      
+      if (yearNum > 1900 && monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
+        const result = `${dayNum.toString().padStart(2, '0')}/${monthNum.toString().padStart(2, '0')}/${yearNum}`;
+        console.log('Data convertida de ISO para brasileiro:', result); // Debug
+        return result;
+      }
+    }
   }
   
-  console.log('Data não convertida, retornando original:', dateStr); // Debug
-  return dateStr;
+  console.log('Data não pôde ser convertida, retornando vazio'); // Debug
+  return '';
 }
 
 // ===== STUDENTS CRUD =====
@@ -497,7 +516,8 @@ function showEditForm(title, fields) {
                    ${field.type === 'number' ? 'min="1"' : ''}
                    ${field.name === 'cpf' ? 'pattern="[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]{2}|[0-9]{11}" title="CPF deve ter formato: 123.456.789-01 ou 12345678901"' : ''}
                    ${field.name === 'periodo' ? 'min="1" max="12"' : ''}
-                   ${field.name === 'carga_horaria_total' || field.name === 'carga_horaria' ? 'min="1" max="9999"' : ''}>
+                   ${field.name === 'carga_horaria_total' || field.name === 'carga_horaria' ? 'min="1" max="9999"' : ''}
+                   ${field.type === 'date' ? 'lang="pt-BR" data-date-format="DD/MM/YYYY"' : ''}>
           </div>
         `;
       }
@@ -527,6 +547,21 @@ function showEditForm(title, fields) {
     // Adicionar ao container de modais
     const modalContainer = document.getElementById('modalContainer') || document.body;
     modalContainer.appendChild(modal);
+    
+    // Configurar inputs de data após adicionar ao DOM
+    const dateInputs = modal.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+      console.log('Configurando input de data no modal:', input.name, 'valor:', input.value);
+      
+      // Adicionar evento para debug
+      input.addEventListener('focus', function() {
+        console.log(`Modal input date ${this.name} focado - valor:`, this.value);
+      });
+      
+      input.addEventListener('change', function() {
+        console.log(`Modal input date ${this.name} alterado - novo valor:`, this.value);
+      });
+    });
     
     // Funções globais para gerenciar o modal
     window.currentModal = modal;
