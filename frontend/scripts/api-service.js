@@ -193,35 +193,6 @@ class ApiService {
     });
   }
 
-  // ===== EVALUATIONS API =====
-  async getEvaluations() {
-    return await this.request('/evaluations');
-  }
-
-  async getEvaluation(id) {
-    return await this.request(`/evaluations/${id}`);
-  }
-
-  async createEvaluation(evaluationData) {
-    return await this.request('/evaluations', {
-      method: 'POST',
-      body: JSON.stringify(evaluationData)
-    });
-  }
-
-  async updateEvaluation(id, evaluationData) {
-    return await this.request(`/evaluations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(evaluationData)
-    });
-  }
-
-  async deleteEvaluation(id) {
-    return await this.request(`/evaluations/${id}`, {
-      method: 'DELETE'
-    });
-  }
-
   // ===== ENROLLMENTS API (Grade Student) =====
   async getEnrollments() {
     return await this.request('/enrollments');
@@ -251,39 +222,7 @@ class ApiService {
     });
   }
 
-  // ===== STUDENT EVALUATIONS API (Notas) =====
-  async getStudentEvaluations() {
-    return await this.request('/student-evaluations');
-  }
-
-  async getStudentEvaluation(idAvaliacao, idAluno) {
-    return await this.request(`/student-evaluations/${idAvaliacao}/${idAluno}`);
-  }
-
-  async createStudentEvaluation(gradeData) {
-    return await this.request('/student-evaluations', {
-      method: 'POST',
-      body: JSON.stringify(gradeData)
-    });
-  }
-
-  async updateStudentEvaluation(idAvaliacao, idAluno, gradeData) {
-    return await this.request(`/student-evaluations/${idAvaliacao}/${idAluno}`, {
-      method: 'PUT',
-      body: JSON.stringify(gradeData)
-    });
-  }
-
-  async deleteStudentEvaluation(idAvaliacao, idAluno) {
-    return await this.request(`/student-evaluations/${idAvaliacao}/${idAluno}`, {
-      method: 'DELETE'
-    });
-  }
-
   // ===== REPORTS API =====
-  async getStudentGrades(studentId) {
-    return await this.request(`/reports/student-grades/${studentId}`);
-  }
 
   async getProfessorWorkload(professorId) {
     return await this.request(`/reports/professor-workload/${professorId}`);
@@ -304,9 +243,7 @@ class DataManager {
       professors: [],
       subjects: [],
       offers: [],
-      evaluations: [],
-      enrollments: [],
-      studentEvaluations: [] // Renomeado de 'grades' para ser mais claro
+      enrollments: []
     };
   }
 
@@ -316,15 +253,13 @@ class DataManager {
       showNotification('Carregando dados...', 'info');
       
       // Carregar todos os dados em paralelo
-      const [students, courses, professors, subjects, offers, evaluations, enrollments, studentEvaluations] = await Promise.all([
+      const [students, courses, professors, subjects, offers, enrollments] = await Promise.all([
         this.loadStudents(),
         this.loadCourses(),
         this.loadProfessors(),
         this.loadSubjects(),
         this.loadOffers(),
-        this.loadEvaluations(),
-        this.loadEnrollments(),
-        this.loadStudentEvaluations()
+        this.loadEnrollments()
       ]);
 
       // Atualizar estado global
@@ -333,9 +268,7 @@ class DataManager {
       appState.professors = professors;
       appState.subjects = subjects;
       appState.offers = offers;
-      appState.evaluations = evaluations;
       appState.enrollments = enrollments;
-      appState.grades = studentEvaluations; // Manter compatibilidade com app.js
 
       showNotification('Dados carregados com sucesso!', 'success');
       return true;
@@ -417,18 +350,6 @@ class DataManager {
     }
   }
 
-  async loadEvaluations() {
-    try {
-      const data = await this.apiService.getEvaluations();
-      this.state.evaluations = Array.isArray(data) ? data : [];
-      return this.state.evaluations;
-    } catch (error) {
-      console.error('Erro ao carregar avaliações:', error);
-      this.state.evaluations = [];
-      return [];
-    }
-  }
-
   async loadEnrollments() {
     try {
       const data = await this.apiService.getEnrollments();
@@ -437,18 +358,6 @@ class DataManager {
     } catch (error) {
       console.error('Erro ao carregar matrículas:', error);
       this.state.enrollments = [];
-      return [];
-    }
-  }
-
-  async loadStudentEvaluations() {
-    try {
-      const data = await this.apiService.getStudentEvaluations();
-      this.state.studentEvaluations = Array.isArray(data) ? data : [];
-      return this.state.studentEvaluations;
-    } catch (error) {
-      console.error('Erro ao carregar notas:', error);
-      this.state.studentEvaluations = [];
       return [];
     }
   }

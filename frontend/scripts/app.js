@@ -94,9 +94,7 @@ const appState = {
   professors: [],
   subjects: [],
   offers: [],
-  evaluations: [],
   enrollments: [],
-  grades: [],
   currentSection: 'dashboard'
 }
 
@@ -116,9 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       appState.professors = dataManager.state.professors;
       appState.subjects = dataManager.state.subjects;
       appState.offers = dataManager.state.offers;
-      appState.evaluations = dataManager.state.evaluations;
       appState.enrollments = dataManager.state.enrollments;
-      appState.grades = dataManager.state.studentEvaluations;
       
       // Carregar todas as tabelas
       loadStudentsTable();
@@ -126,9 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadProfessorsTable();
       loadSubjectsTable();
       loadOffersTable();
-      loadEvaluationsTable();
       loadEnrollmentsTable();
-      loadGradesTable();
       updateDashboard();
     }
   } catch (error) {
@@ -166,9 +160,7 @@ function animateSplashStats() {
   animateNumber("totalProfessors", appState.professors.length)
   animateNumber("totalSubjects", appState.subjects.length)
   animateNumber("totalOffers", appState.offers.length)
-  animateNumber("totalEvaluations", appState.evaluations.length)
   animateNumber("totalEnrollments", appState.enrollments.length)
-  animateNumber("totalGrades", appState.grades.length)
 }
 
 function animateNumber(elementId, target) {
@@ -219,9 +211,7 @@ function updateDashboard() {
   document.getElementById("dashProfessors").textContent = appState.professors.length
   document.getElementById("dashSubjects").textContent = appState.subjects.length
   document.getElementById("dashOffers").textContent = appState.offers.length
-  document.getElementById("dashEvaluations").textContent = appState.evaluations.length
   document.getElementById("dashEnrollments").textContent = appState.enrollments.length
-  document.getElementById("dashGrades").textContent = appState.grades.length
 }
 
 // Funções de carregamento de tabelas
@@ -406,34 +396,7 @@ function loadOffersTable() {
   })
 }
 
-function loadEvaluationsTable() {
-  const tbody = document.getElementById("evaluationsTableBody")
-  tbody.innerHTML = ""
 
-  if (appState.evaluations.length === 0) {
-    tbody.innerHTML =
-      '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma avaliação cadastrada</td></tr>'
-    return
-  }
-
-  appState.evaluations.forEach((evaluation) => {
-    const row = document.createElement("tr")
-    row.innerHTML = `
-      <td>${evaluation.id}</td>
-      <td>Oferta #${evaluation.id_oferta}</td>
-      <td>${evaluation.tipo}</td>
-      <td>${(evaluation.peso * 100).toFixed(0)}%</td>
-      <td>${formatDate(evaluation.data_avaliacao)}</td>
-      <td>
-        <div class="table-actions">
-          <button class="icon-btn edit" onclick="editEvaluation(${evaluation.id})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteEvaluation(${evaluation.id})" title="Excluir">🗑️</button>
-        </div>
-      </td>
-    `
-    tbody.appendChild(row)
-  })
-}
 
 function loadEnrollmentsTable() {
   const tbody = document.getElementById("enrollmentsTableBody")
@@ -441,7 +404,7 @@ function loadEnrollmentsTable() {
 
   if (appState.enrollments.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma matrícula encontrada</td></tr>'
+      '<tr><td colspan="5" style="text-align: center; padding: 3rem;">Nenhuma matrícula encontrada</td></tr>'
     return
   }
 
@@ -451,7 +414,6 @@ function loadEnrollmentsTable() {
       <td>${enrollment.matricula}</td>
       <td>${enrollment.id_oferta}</td>
       <td><span class="status-badge ${enrollment.status?.toLowerCase()}">${enrollment.status}</span></td>
-      <td>${enrollment.media_final ? enrollment.media_final.toFixed(2) : "N/A"}</td>
       <td>${enrollment.aluno_nome}</td>
       <td>${enrollment.materia_nome}</td>
     `
@@ -459,31 +421,7 @@ function loadEnrollmentsTable() {
   })
 }
 
-function loadGradesTable() {
-  const tbody = document.getElementById("gradesTableBody")
-  tbody.innerHTML = ""
 
-  if (appState.grades.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 3rem;">Nenhuma nota cadastrada</td></tr>'
-    return
-  }
-
-  appState.grades.forEach((grade) => {
-    const row = document.createElement("tr")
-    row.innerHTML = `
-      <td>Avaliação #${grade.id_avaliacao}</td>
-      <td>${grade.aluno_nome}</td>
-      <td><strong>${grade.nota.toFixed(1)}</strong></td>
-      <td>
-        <div class="table-actions">
-          <button class="icon-btn edit" onclick="editGrade(${grade.id_avaliacao}, ${grade.id_aluno})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteGrade(${grade.id_avaliacao}, ${grade.id_aluno})" title="Excluir">🗑️</button>
-        </div>
-      </td>
-    `
-    tbody.appendChild(row)
-  })
-}
 
 // Sistema de busca/filtro nas tabelas
 function filterTable(tableId, searchValue) {

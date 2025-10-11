@@ -354,72 +354,9 @@ async function deleteOffer(id) {
   }
 }
 
-// ===== EVALUATIONS CRUD =====
-async function addEvaluation() {
-  try {
-    const formData = await showEditForm('Adicionar Avaliação', [
-      { name: 'id_oferta', label: 'ID Oferta', type: 'number', required: true },
-      { name: 'tipo', label: 'Tipo', type: 'select', options: ['Prova', 'Trabalho', 'Seminário', 'Projeto'], required: true },
-      { name: 'peso', label: 'Peso (0-1)', type: 'number', step: '0.1', required: true },
-      { name: 'data_avaliacao', label: 'Data da Avaliação', type: 'date' }
-    ]);
-
-    if (formData) {
-      await apiService.createEvaluation(formData);
-      await dataManager.loadEvaluations();
-      loadEvaluationsTable();
-      updateDashboard();
-      showNotification("Avaliação criada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao criar avaliação:', error);
-  }
-}
-
-async function editEvaluation(id) {
-  try {
-    const evaluation = appState.evaluations.find(e => e.id === id);
-    if (!evaluation) {
-      showNotification("Avaliação não encontrada!", "error");
-      return;
-    }
-
-    const formData = await showEditForm('Editar Avaliação', [
-      { name: 'id_oferta', label: 'ID Oferta', type: 'number', value: evaluation.id_oferta, required: true },
-      { name: 'tipo', label: 'Tipo', type: 'select', value: evaluation.tipo, options: ['Prova', 'Trabalho', 'Seminário', 'Projeto'], required: true },
-      { name: 'peso', label: 'Peso (0-1)', type: 'number', step: '0.1', value: evaluation.peso, required: true },
-      { name: 'data_avaliacao', label: 'Data da Avaliação', type: 'date', value: evaluation.data_avaliacao }
-    ]);
-
-    if (formData) {
-      await apiService.updateEvaluation(id, formData);
-      await dataManager.loadEvaluations();
-      loadEvaluationsTable();
-      updateDashboard();
-      showNotification("Avaliação atualizada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao editar avaliação:', error);
-  }
-}
-
-async function deleteEvaluation(id) {
-  if (!confirm("Tem certeza que deseja excluir esta avaliação?")) return;
-
-  try {
-    await apiService.deleteEvaluation(id);
-    await dataManager.loadEvaluations();
-    loadEvaluationsTable();
-    updateDashboard();
-    showNotification("Avaliação excluída com sucesso!", "success");
-  } catch (error) {
-    console.error('Erro ao excluir avaliação:', error);
-  }
-}
-
 // ===== ENROLLMENTS - READ ONLY (AUTO-POPULATED) =====
 // Note: CRUD operations removed since Grade_Aluno is now auto-populated
-// Status comes from Student table and Media_Final is automatically calculated
+// Status comes from Student table
 
 async function refreshEnrollments() {
   try {
@@ -449,65 +386,6 @@ async function refreshEnrollments() {
   }
 }
 
-// ===== GRADES CRUD =====
-async function addGrade() {
-  try {
-    const formData = await showEditForm('Adicionar Nota', [
-      { name: 'id_avaliacao', label: 'ID da Avaliação', type: 'number', required: true },
-      { name: 'id_aluno', label: 'ID/Matrícula do Aluno', type: 'text', required: true },
-      { name: 'nota', label: 'Nota (0-10)', type: 'number', step: '0.1', min: '0', max: '10', required: true }
-    ]);
-
-    if (formData) {
-      await apiService.createGrade(formData);
-      await dataManager.loadGrades();
-      loadGradesTable();
-      updateDashboard();
-      showNotification("Nota adicionada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao adicionar nota:', error);
-  }
-}
-
-async function editGrade(idAvaliacao, idAluno) {
-  try {
-    const grade = appState.grades.find(g => g.id_avaliacao === idAvaliacao && g.id_aluno === idAluno);
-    if (!grade) {
-      showNotification("Nota não encontrada!", "error");
-      return;
-    }
-
-    const formData = await showEditForm('Editar Nota', [
-      { name: 'nota', label: 'Nota (0-10)', type: 'number', step: '0.1', min: '0', max: '10', value: grade.nota, required: true }
-    ]);
-
-    if (formData) {
-      await apiService.updateGrade(idAvaliacao, idAluno, formData);
-      await dataManager.loadGrades();
-      loadGradesTable();
-      updateDashboard();
-      showNotification("Nota atualizada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao editar nota:', error);
-  }
-}
-
-async function deleteGrade(idAvaliacao, idAluno) {
-  if (!confirm("Tem certeza que deseja excluir esta nota?")) return;
-
-  try {
-    await apiService.deleteGrade(idAvaliacao, idAluno);
-    await dataManager.loadGrades();
-    loadGradesTable();
-    updateDashboard();
-    showNotification("Nota excluída com sucesso!", "success");
-  } catch (error) {
-    console.error('Erro ao excluir nota:', error);
-  }
-}
-
 // ===== UTILITY FUNCTIONS =====
 async function refreshAllData() {
   showNotification("Atualizando dados...", "info");
@@ -519,9 +397,7 @@ async function refreshAllData() {
     loadProfessorsTable();
     loadSubjectsTable();
     loadOffersTable();
-    loadEvaluationsTable();
     loadEnrollmentsTable();
-    loadGradesTable();
     updateDashboard();
     showNotification("Dados atualizados com sucesso!", "success");
   }

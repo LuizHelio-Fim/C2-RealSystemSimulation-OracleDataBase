@@ -6,4 +6,3 @@ class GradeStudent:
     matricula: int    # Student matricula (Changed from id_aluno)
     id_oferta: int    # Offer ID
     status: str       # Status from Student table (auto-populated)
-    media_final: Optional[float]  # Automatically calculated average
