@@ -146,19 +146,30 @@ def update_course(course_id):
             # VULNERÁVEL: Construir query de atualização dinamicamente
             update_parts = []
             
-            if 'nome' in data:
-                update_parts.append("NOME = '" + str(data['nome']) + "'")
+            if 'nome' in data and data['nome'] is not None and str(data['nome']).strip() != '':
+                # Escape aspas simples para evitar SQL injection
+                nome_escaped = str(data['nome']).replace("'", "''")
+                update_parts.append("NOME = '" + nome_escaped + "'")
             
-            if 'carga_horaria_total' in data:
-                update_parts.append("CARGA_HORARIA_TOTAL = " + str(data['carga_horaria_total']))
+            if 'carga_horaria_total' in data and data['carga_horaria_total'] is not None:
+                # Validar se é um número
+                try:
+                    carga_horaria = float(data['carga_horaria_total'])
+                    update_parts.append("CARGA_HORARIA_TOTAL = " + str(carga_horaria))
+                except (ValueError, TypeError):
+                    return jsonify({
+                        'success': False,
+                        'message': 'Carga horária deve ser um número válido'
+                    }), 400
 
             if not update_parts:
                 return jsonify({
                     'success': False,
-                    'message': 'Nenhum campo para atualizar foi fornecido'
+                    'message': 'Nenhum campo válido para atualizar foi fornecido'
                 }), 400
 
             sql = "UPDATE CURSO SET " + ", ".join(update_parts) + " WHERE ID = " + str(course_id)
+            print(f"SQL gerado: {sql}")  # Debug
             cur.execute(sql)
             conn.commit()
             

@@ -213,8 +213,13 @@ def update_professor(professor_id):
                 update_parts.append("EMAIL = '" + str(data['email']) + "'")
                 
             if 'status' in data:
-                status_val = "NULL" if data['status'] is None else "'" + str(data['status']) + "'"
-                update_parts.append("STATUS = " + status_val)
+                # STATUS é NOT NULL no banco, então não pode ser None/NULL
+                if data['status'] is None or str(data['status']).strip() == '':
+                    return jsonify({
+                        'success': False,
+                        'message': 'Campo status é obrigatório e não pode ser vazio'
+                    }), 400
+                update_parts.append("STATUS = '" + str(data['status']) + "'")
 
             if not update_parts:
                 return jsonify({

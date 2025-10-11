@@ -14,21 +14,39 @@ def create_subject():
             }), 400
         
         # Validar campos obrigatórios conforme schema do banco (todos são NOT NULL)
-        id_materia = data.get('id_materia')
         id_curso = data.get('id_curso')
         periodo = data.get('periodo')
         nome = data.get('nome')
         carga_horaria = data.get('carga_horaria')
         
-        # Todos estes campos são NOT NULL no banco MATERIA
-        if not all([id_materia is not None, id_curso is not None, periodo is not None, nome, carga_horaria is not None]):
+        # Validação específica dos campos obrigatórios
+        missing_fields = []
+        if not id_curso or id_curso == '':
+            missing_fields.append('id_curso')
+        if periodo is None or periodo == '':
+            missing_fields.append('periodo')
+        if not nome or nome.strip() == '':
+            missing_fields.append('nome')
+        if carga_horaria is None or carga_horaria == '':
+            missing_fields.append('carga_horaria')
+            
+        if missing_fields:
             return jsonify({
                 'success': False,
-                'message': 'Campos obrigatórios: id_materia, id_curso, periodo, nome, carga_horaria'
+                'message': f'Campos obrigatórios ausentes: {", ".join(missing_fields)}'
             }), 400
 
+        # Gerar ID_MATERIA automaticamente se não fornecido
+        id_materia = data.get('id_materia')
+        
         conn = get_connection()
+        
         cur = conn.cursor()
+        
+        if not id_materia:
+            # Gerar próximo ID automaticamente
+            cur.execute("SELECT NVL(MAX(ID_MATERIA), 0) + 1 FROM MATERIA WHERE ID_CURSO = " + str(id_curso))
+            id_materia = cur.fetchone()[0]
 
         try:
             # VULNERÁVEL: Verificar se o curso existe

@@ -31,20 +31,36 @@ def create_student():
                 'message': 'Dados JSON são obrigatórios'
             }), 400
         
-        # Validar campos obrigatórios conforme schema do banco (CPF e STATUS_CURSO são NOT NULL)
-        matricula = data.get('matricula')
+        # Validar campos obrigatórios (matrícula será gerada automaticamente)
         nome = data.get('nome')
         cpf = data.get('cpf')
         email = data.get('email')
         periodo = data.get('periodo')
-        id_curso = data.get('id_curso')
+        id_curso = data.get('id_curso')  
         status_curso = data.get('status_curso')
         
-        # Todos estes campos são NOT NULL no banco ALUNO
-        if not all([matricula, nome, cpf, email, periodo, id_curso, status_curso]):
+        # Debug: log dos dados recebidos
+        print(f"Dados recebidos: {data}")
+        
+        # Validação dos campos obrigatórios (exceto matrícula que será gerada)
+        missing_fields = []
+        if not nome or nome.strip() == '':
+            missing_fields.append('nome')
+        if not cpf or cpf.strip() == '':
+            missing_fields.append('cpf')
+        if not email or email.strip() == '':
+            missing_fields.append('email')
+        if periodo is None or periodo == '':
+            missing_fields.append('periodo')
+        if not id_curso or id_curso == '':
+            missing_fields.append('id_curso')
+        if not status_curso or status_curso.strip() == '':
+            missing_fields.append('status_curso')
+            
+        if missing_fields:
             return jsonify({
                 'success': False,
-                'message': 'Campos obrigatórios: matricula, nome, cpf, email, periodo, id_curso, status_curso'
+                'message': f'Campos obrigatórios ausentes ou vazios: {", ".join(missing_fields)}'
             }), 400
 
         conn = get_connection()
@@ -55,6 +71,35 @@ def create_student():
         telefone = data.get("telefone")
 
         try:
+            # Gerar matrícula automaticamente: YYYYCCNN 
+            # YYYY = Ano atual, CC = ID do curso (2 dígitos), NN = contador sequencial
+            from datetime import datetime
+            ano_atual = datetime.now().year
+            
+            # Formatar ID do curso com 2 dígitos (ex: 1 -> 01, 10 -> 10)
+            curso_formatted = str(id_curso).zfill(2)
+            
+            # Buscar o próximo número sequencial para este curso neste ano
+            cur.execute(f"""
+                SELECT NVL(MAX(
+                    CASE 
+                        WHEN MATRICULA LIKE '{ano_atual}{curso_formatted}%' 
+                        THEN TO_NUMBER(SUBSTR(MATRICULA, -2))
+                        ELSE 0 
+                    END
+                ), 0) + 1 
+                FROM ALUNO 
+                WHERE ID_CURSO = {id_curso}
+            """)
+            proximo_numero = cur.fetchone()[0]
+            
+            # Formatar número sequencial com 2 dígitos (ex: 1 -> 01)
+            numero_formatted = str(proximo_numero).zfill(2)
+            
+            # Gerar matrícula final: YYYYCCNN
+            matricula = f"{ano_atual}{curso_formatted}{numero_formatted}"
+            print(f"Matrícula gerada: {matricula}")
+            
             # Formatar data se fornecida
             formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
             
