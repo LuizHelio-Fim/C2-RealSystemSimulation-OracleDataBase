@@ -3,7 +3,7 @@ from typing import Optional
 
 @dataclass
 class GradeStudent:
-    id_aluno: int     # Composite Primary Key part 1
-    id_oferta: int    # Composite Primary Key part 2
-    status: str
-    media_final: Optional[float]
+    matricula: int    # Student matricula (Changed from id_aluno)
+    id_oferta: int    # Offer ID
+    status: str       # Status from Student table (auto-populated)
+    media_final: Optional[float]  # Automatically calculated average

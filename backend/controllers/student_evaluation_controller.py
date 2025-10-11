@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db.db_conn import get_connection, release_connection
+from .grade_student_controller import update_student_average
 
 bp = Blueprint('student_evaluation', __name__)
 
@@ -47,8 +48,17 @@ def create_student_evaluation():
 
             sql = "INSERT INTO AVALIACAO_ALUNO (ID_AVALIACAO, ID_ALUNO, NOTA) VALUES (" + str(id_avaliacao) + ", " + str(id_aluno) + ", " + str(nota) + ")"
             cur.execute(sql)
+            
+            # Buscar a oferta desta avaliação para atualizar a média
+            cur.execute("SELECT ID_OFERTA FROM AVALIACAO WHERE ID = " + str(id_avaliacao))
+            offer_id = cur.fetchone()[0]
+            
             conn.commit()
-            return jsonify({'message': 'Nota cadastrada com sucesso'}), 201
+            
+            # Atualizar a média final do aluno na tabela GRADE_ALUNO
+            update_student_average(id_aluno, offer_id)
+            
+            return jsonify({'message': 'Nota cadastrada com sucesso e média atualizada'}), 201
         except Exception as e:
             conn.rollback()
             return jsonify({'error': f'Erro ao cadastrar nota: {str(e)}'}), 500
@@ -157,9 +167,17 @@ def update_student_evaluation(evaluation_id, student_id):
 
             sql = "UPDATE AVALIACAO_ALUNO SET NOTA = " + str(data['nota']) + " WHERE ID_AVALIACAO = " + str(evaluation_id) + " AND ID_ALUNO = " + str(student_id)
             cur.execute(sql)
+            
+            # Buscar a oferta desta avaliação para atualizar a média
+            cur.execute("SELECT ID_OFERTA FROM AVALIACAO WHERE ID = " + str(evaluation_id))
+            offer_id = cur.fetchone()[0]
+            
             conn.commit()
             
-            return jsonify({'message': 'Nota atualizada com sucesso'}), 200
+            # Atualizar a média final do aluno na tabela GRADE_ALUNO
+            update_student_average(student_id, offer_id)
+            
+            return jsonify({'message': 'Nota atualizada com sucesso e média recalculada'}), 200
             
         except Exception as e:
             conn.rollback()
@@ -183,11 +201,19 @@ def delete_student_evaluation(evaluation_id, student_id):
         if evaluation_exists == 0:
             return jsonify({'error': 'Nota não encontrada'}), 404
         
+        # Buscar a oferta desta avaliação antes de deletar
+        cur.execute("SELECT ID_OFERTA FROM AVALIACAO WHERE ID = " + str(evaluation_id))
+        offer_id = cur.fetchone()[0]
+        
         # Deletar nota
         sql = "DELETE FROM AVALIACAO_ALUNO WHERE ID_AVALIACAO = " + str(evaluation_id) + " AND ID_ALUNO = " + str(student_id)
         cur.execute(sql)
         conn.commit()
-        return jsonify({'message': 'Nota deletada com sucesso'}), 200
+        
+        # Atualizar a média final do aluno na tabela GRADE_ALUNO
+        update_student_average(student_id, offer_id)
+        
+        return jsonify({'message': 'Nota deletada com sucesso e média recalculada'}), 200
     except Exception as e:
         conn.rollback()
         return jsonify({'error': f'Erro ao deletar nota: {str(e)}'}), 500

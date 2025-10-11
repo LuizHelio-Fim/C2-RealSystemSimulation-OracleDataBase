@@ -469,17 +469,18 @@
             <!-- Enrollments View -->
             <div id="enrollmentsView" class="view" style="display: none;">
                 <div class="header">
-                    <h1 class="header-title">Matrículas</h1>
+                    <h1 class="header-title">Matrículas (Auto-Populada)</h1>
                     <div class="header-actions">
-                        <button class="btn btn-primary" onclick="addEnrollment()">
-                            ➕ Nova Matrícula
+                        <button class="btn btn-secondary" onclick="refreshEnrollments()">
+                            🔄 Atualizar Dados
                         </button>
+                        <span class="info-text">📋 Dados calculados automaticamente</span>
                     </div>
                 </div>
 
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="table-title">Grade Aluno</h2>
+                        <h2 class="table-title">Grade Aluno (Somente Leitura)</h2>
                         <div class="search-box">
                             <span>🔍</span>
                             <input type="text" placeholder="Buscar matrícula..." onkeyup="filterTable('enrollmentsTable', this.value)">
@@ -489,15 +490,16 @@
                         <table id="enrollmentsTable">
                             <thead>
                                 <tr>
-                                    <th>ID Aluno</th>
+                                    <th>Matrícula</th>
                                     <th>ID Oferta</th>
                                     <th>Status</th>
                                     <th>Média Final</th>
-                                    <th>Ações</th>
+                                    <th>Aluno</th>
+                                    <th>Matéria</th>
                                 </tr>
                             </thead>
                             <tbody id="enrollmentsTableBody">
-                                <tr><td colspan="5" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                                <tr><td colspan="6" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
                             </tbody>
                         </table>
                     </div>

@@ -419,23 +419,19 @@ function loadEnrollmentsTable() {
 
   if (appState.enrollments.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="5" style="text-align: center; padding: 3rem;">Nenhuma matrícula cadastrada</td></tr>'
+      '<tr><td colspan="6" style="text-align: center; padding: 3rem;">Nenhuma matrícula encontrada</td></tr>'
     return
   }
 
   appState.enrollments.forEach((enrollment) => {
     const row = document.createElement("tr")
     row.innerHTML = `
+      <td>${enrollment.matricula}</td>
+      <td>${enrollment.id_oferta}</td>
+      <td><span class="status-badge ${enrollment.status?.toLowerCase()}">${enrollment.status}</span></td>
+      <td>${enrollment.media_final ? enrollment.media_final.toFixed(2) : "N/A"}</td>
       <td>${enrollment.aluno_nome}</td>
-      <td>${enrollment.oferta_info}</td>
-      <td><span class="status-badge ${enrollment.status}">${enrollment.status}</span></td>
-      <td>${enrollment.media_final ? enrollment.media_final.toFixed(1) : "N/A"}</td>
-      <td>
-        <div class="table-actions">
-          <button class="icon-btn edit" onclick="editEnrollment(${enrollment.id_aluno}, ${enrollment.id_oferta})" title="Editar">✏️</button>
-          <button class="icon-btn delete" onclick="deleteEnrollment(${enrollment.id_aluno}, ${enrollment.id_oferta})" title="Excluir">🗑️</button>
-        </div>
-      </td>
+      <td>${enrollment.materia_nome}</td>
     `
     tbody.appendChild(row)
   })

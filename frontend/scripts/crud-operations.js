@@ -17,22 +17,24 @@ async function addStudent() {
     if (formData) {
       console.log('Dados do formulário recebidos:', formData); // Debug
       
-      // Teste simples sem backend
-      alert('Dados recebidos do formulário: ' + JSON.stringify(formData, null, 2));
-      showNotification("Teste: Dados do formulário recebidos com sucesso!", "success");
-      
-      // Código original comentado para teste
-      /*
-      const response = await apiService.createStudent(formData);
-      console.log('Resposta da API:', response); // Debug
-      await dataManager.loadStudents();
-      loadStudentsTable();
-      updateDashboard();
-      showNotification("Aluno criado com sucesso!", "success");
-      */
+      try {
+        // Fazer a requisição para o backend
+        const response = await apiService.createStudent(formData);
+        console.log('Resposta da API:', response); // Debug
+        
+        // Recarregar dados e atualizar interface
+        await dataManager.loadStudents();
+        loadStudentsTable();
+        updateDashboard();
+        showNotification("Aluno criado com sucesso!", "success");
+      } catch (error) {
+        // Se der erro no backend, mostrar dados coletados para debug
+        console.warn('Backend indisponível, dados coletados:', formData);
+        showNotification("Backend indisponível, mas formulário funcionando: " + JSON.stringify(formData), "info");
+      }
     } else {
       console.log('Nenhum dado recebido do formulário'); // Debug
-      alert('Nenhum dado foi recebido do formulário!');
+      showNotification('Nenhum dado foi recebido do formulário!', 'error');
     }
   } catch (error) {
     console.error('Erro ao criar aluno:', error);
@@ -410,64 +412,35 @@ async function deleteEvaluation(id) {
   }
 }
 
-// ===== ENROLLMENTS CRUD =====
-async function addEnrollment() {
+// ===== ENROLLMENTS - READ ONLY (AUTO-POPULATED) =====
+// Note: CRUD operations removed since Grade_Aluno is now auto-populated
+// Status comes from Student table and Media_Final is automatically calculated
+
+async function refreshEnrollments() {
   try {
-    const formData = await showEditForm('Adicionar Matrícula', [
-      { name: 'id_aluno', label: 'ID/Matrícula do Aluno', type: 'text', required: true },
-      { name: 'id_oferta', label: 'ID da Oferta', type: 'number', required: true },
-      { name: 'status', label: 'Status', type: 'select', options: ['Matriculado', 'Aprovado', 'Reprovado', 'Trancado'], value: 'Matriculado' },
-      { name: 'media_final', label: 'Média Final', type: 'number', step: '0.1' }
-    ]);
-
-    if (formData) {
-      await apiService.createEnrollment(formData);
-      await dataManager.loadEnrollments();
-      loadEnrollmentsTable();
-      updateDashboard();
-      showNotification("Matrícula criada com sucesso!", "success");
+    showNotification("Atualizando dados das matrículas...", "info");
+    
+    // Call the backend refresh endpoint
+    const response = await fetch(`${apiService.baseURL}/enrollments/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Falha ao atualizar dados');
     }
-  } catch (error) {
-    console.error('Erro ao criar matrícula:', error);
-  }
-}
-
-async function editEnrollment(idAluno, idOferta) {
-  try {
-    const enrollment = appState.enrollments.find(e => e.id_aluno === idAluno && e.id_oferta === idOferta);
-    if (!enrollment) {
-      showNotification("Matrícula não encontrada!", "error");
-      return;
-    }
-
-    const formData = await showEditForm('Editar Matrícula', [
-      { name: 'status', label: 'Status', type: 'select', value: enrollment.status, options: ['Matriculado', 'Aprovado', 'Reprovado', 'Trancado'], required: true },
-      { name: 'media_final', label: 'Média Final', type: 'number', step: '0.1', value: enrollment.media_final }
-    ]);
-
-    if (formData) {
-      await apiService.updateEnrollment(idAluno, idOferta, formData);
-      await dataManager.loadEnrollments();
-      loadEnrollmentsTable();
-      updateDashboard();
-      showNotification("Matrícula atualizada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao editar matrícula:', error);
-  }
-}
-
-async function deleteEnrollment(idAluno, idOferta) {
-  if (!confirm("Tem certeza que deseja excluir esta matrícula?")) return;
-
-  try {
-    await apiService.deleteEnrollment(idAluno, idOferta);
+    
+    // Reload the data
     await dataManager.loadEnrollments();
     loadEnrollmentsTable();
     updateDashboard();
-    showNotification("Matrícula excluída com sucesso!", "success");
+    showNotification("Dados das matrículas atualizados com sucesso!", "success");
+    
   } catch (error) {
-    console.error('Erro ao excluir matrícula:', error);
+    console.error('Erro ao atualizar matrículas:', error);
+    showNotification("Erro ao atualizar dados das matrículas!", "error");
   }
 }
 
