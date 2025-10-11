@@ -1,8 +1,30 @@
 // Sistema de notificações empilhadas
 let notificationContainer = null;
 let notificationCount = 0;
+let recentNotifications = new Map(); // Cache de notificações recentes
 
 function showNotification(message, type = 'info') {
+  // Verificar se já existe uma notificação idêntica recente (últimos 2 segundos)
+  const notificationKey = `${type}:${message}`;
+  const now = Date.now();
+  
+  if (recentNotifications.has(notificationKey)) {
+    const lastTime = recentNotifications.get(notificationKey);
+    if (now - lastTime < 2000) { // 2 segundos
+      return; // Ignorar notificação duplicada
+    }
+  }
+  
+  // Registrar esta notificação
+  recentNotifications.set(notificationKey, now);
+  
+  // Limpar notificações antigas do cache (mais de 5 segundos)
+  for (const [key, time] of recentNotifications.entries()) {
+    if (now - time > 5000) {
+      recentNotifications.delete(key);
+    }
+  }
+
   // Criar container se não existir
   if (!notificationContainer) {
     notificationContainer = document.createElement("div");

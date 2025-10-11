@@ -151,16 +151,27 @@ def update_course(course_id):
                 nome_escaped = str(data['nome']).replace("'", "''")
                 update_parts.append("NOME = '" + nome_escaped + "'")
             
-            if 'carga_horaria_total' in data and data['carga_horaria_total'] is not None:
-                # Validar se é um número
-                try:
-                    carga_horaria = float(data['carga_horaria_total'])
-                    update_parts.append("CARGA_HORARIA_TOTAL = " + str(carga_horaria))
-                except (ValueError, TypeError):
-                    return jsonify({
-                        'success': False,
-                        'message': 'Carga horária deve ser um número válido'
-                    }), 400
+            if 'carga_horaria_total' in data:
+                carga_value = data['carga_horaria_total']
+                
+                # Se o valor for None ou string vazia, pular este campo
+                if carga_value is None or (isinstance(carga_value, str) and carga_value.strip() == ''):
+                    pass  # Não incluir este campo na atualização
+                else:
+                    # Validar se é um número
+                    try:
+                        carga_horaria = float(carga_value)
+                        if carga_horaria < 0:
+                            return jsonify({
+                                'success': False,
+                                'message': 'Carga horária deve ser um número positivo'
+                            }), 400
+                        update_parts.append("CARGA_HORARIA_TOTAL = " + str(carga_horaria))
+                    except (ValueError, TypeError):
+                        return jsonify({
+                            'success': False,
+                            'message': f'Carga horária deve ser um número válido. Valor fornecido: {carga_value}'
+                        }), 400
 
             if not update_parts:
                 return jsonify({

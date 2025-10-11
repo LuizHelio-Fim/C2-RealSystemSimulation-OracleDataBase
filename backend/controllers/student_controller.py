@@ -254,11 +254,17 @@ def update_student(student_id):
             # Aceitar ambos os formatos de data
             data_nasc = data.get('data_nasc') or data.get('data_nascimento')
             if data_nasc is not None:
-                formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
-                if formatted_date:
-                    update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
-                else:
-                    update_parts.append("DATA_NASC = NULL")
+                try:
+                    formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
+                    if formatted_date:
+                        update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
+                    else:
+                        update_parts.append("DATA_NASC = NULL")
+                except ValueError as ve:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Erro ao atualizar estudante: {str(ve)}'
+                    }), 400
                     
             if 'telefone' in data:
                 tel_val = "NULL" if data['telefone'] is None else "'" + str(data['telefone']) + "'"

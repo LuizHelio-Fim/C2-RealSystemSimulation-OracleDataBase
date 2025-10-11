@@ -307,7 +307,12 @@ async function addOffer() {
 
 async function editOffer(id) {
   try {
-    const offer = dataManager.offers.find(o => o.id === id);
+    // Garantir que os dados estão carregados
+    if (!dataManager.state.offers || dataManager.state.offers.length === 0) {
+      await dataManager.loadOffers();
+    }
+    
+    const offer = dataManager.state.offers.find(o => o.id === id);
     if (!offer) {
       showNotification("Oferta não encontrada!", "error");
       return;

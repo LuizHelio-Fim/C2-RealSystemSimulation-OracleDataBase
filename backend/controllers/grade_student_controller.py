@@ -12,10 +12,10 @@ def calculate_student_average(student_id, offer_id, conn):
         SELECT aa.NOTA, a.PESO
         FROM AVALIACAO_ALUNO aa
         JOIN AVALIACAO a ON aa.ID_AVALIACAO = a.ID
-        WHERE aa.ID_ALUNO = """ + str(student_id) + """ 
-        AND a.ID_OFERTA = """ + str(offer_id) + """
+        WHERE aa.ID_ALUNO = :student_id
+        AND a.ID_OFERTA = :offer_id
         """
-        cur.execute(sql)
+        cur.execute(sql, {'student_id': student_id, 'offer_id': offer_id})
         grades = cur.fetchall()
         
         if not grades:

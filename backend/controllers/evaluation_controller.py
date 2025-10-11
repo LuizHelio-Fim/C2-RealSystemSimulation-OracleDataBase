@@ -34,19 +34,30 @@ def create_evaluation():
         id_oferta = data.get('id_oferta')
         
         # Todos estes campos são NOT NULL no banco AVALIACAO
-        if not all([tipo, peso is not None, data_avaliacao, id_oferta is not None]):
+        # Usar is not None para peso e id_oferta que podem ser 0
+        if not tipo or not tipo.strip():
             return jsonify({
                 'success': False,
-                'message': 'Campos obrigatórios: tipo, peso, data, id_oferta'
+                'message': 'Campo tipo é obrigatório'
+            }), 400
+        if peso is None:
+            return jsonify({
+                'success': False,
+                'message': 'Campo peso é obrigatório'
+            }), 400
+        if not data_avaliacao or not data_avaliacao.strip():
+            return jsonify({
+                'success': False,
+                'message': 'Campo data é obrigatório'
+            }), 400
+        if id_oferta is None:
+            return jsonify({
+                'success': False,
+                'message': 'Campo id_oferta é obrigatório'
             }), 400
 
         conn = get_connection()
         cur = conn.cursor()
-
-        tipo = data.get("tipo")
-        peso = data.get("peso")
-        data_avaliacao = data.get("data")
-        id_oferta = data.get("id_oferta")
 
         try:
             # Verificar se a oferta existe
