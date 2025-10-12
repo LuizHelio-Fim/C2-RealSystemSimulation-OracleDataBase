@@ -701,7 +701,7 @@ function startInlineEdit(entityType, id, row) {
   const actionsCell = row.querySelector('td:last-child');
   actionsCell.innerHTML = `
     <div class="edit-actions">
-      <button class="save-btn" onclick="saveInlineEdit('${entityType}', ${id})">Salvar</button>
+      <button class="save-btn" onclick="saveInlineEdit('${entityType}', '${id}')">Salvar</button>
       <button class="cancel-btn" onclick="cancelInlineEdit()">Cancelar</button>
     </div>
   `;
