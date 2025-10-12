@@ -43,8 +43,17 @@ class ApiService {
       return result.data || result;
     } catch (error) {
       console.error('API request failed:', error);
-      showNotification(`Erro na API: ${error.message}`, 'error');
-      throw error;
+      
+      // Melhor diagnóstico de erro de rede
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        const networkError = 'Erro de rede: Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:5000';
+        console.error(networkError);
+        showNotification(networkError, 'error');
+        throw new Error(networkError);
+      } else {
+        showNotification(`Erro na API: ${error.message}`, 'error');
+        throw error;
+      }
     }
   }
 
