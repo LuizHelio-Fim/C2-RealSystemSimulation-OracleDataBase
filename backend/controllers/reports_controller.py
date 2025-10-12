@@ -3,64 +3,55 @@ from db.db_conn import get_connection, release_connection
 
 bp = Blueprint('reports', __name__)
 
-@bp.route('/reports/student-grades/<int:student_id>', methods=['GET'])
-def student_grade_report(student_id):
-    """Relatório de notas de um aluno específico"""
+@bp.route('/reports/student-enrollment/<int:student_id>', methods=['GET'])
+def student_enrollment_report(student_id):
+    """Relatório de matrículas de um aluno (grade sem notas)"""
     conn = get_connection()
     cur = conn.cursor()
     try:
-        sql = """
-        SELECT a.NOME as ALUNO_NOME, c.NOME as CURSO_NOME, 
-               m.NOME as MATERIA_NOME, o.ANO, o.SEMESTRE,
-               av.TIPO as AVALIACAO_TIPO, av.PESO, aa.NOTA,
-               ga.STATUS, ga.MEDIA_FINAL, m.MEDIA_APROVACAO
-        FROM ALUNO a
-        JOIN CURSO c ON a.ID_CURSO = c.ID
-        LEFT JOIN GRADE_ALUNO ga ON a.MATRICULA = ga.ID_ALUNO
-        LEFT JOIN OFERTA o ON ga.ID_OFERTA = o.ID
-        LEFT JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-        LEFT JOIN AVALIACAO av ON o.ID = av.ID_OFERTA
-        LEFT JOIN AVALIACAO_ALUNO aa ON av.ID = aa.ID_AVALIACAO AND a.MATRICULA = aa.ID_ALUNO
-        WHERE a.MATRICULA = :student_id
-        ORDER BY o.ANO DESC, o.SEMESTRE DESC, m.NOME, av.DATA
-        """
-        # VULNERÁVEL: Usando concatenação de strings
-        sql = sql.replace(':student_id', str(student_id))
-        cur.execute(sql)
-        rows = cur.fetchall()
+        # Informações do aluno
+        cur.execute("""
+            SELECT a.NOME, a.MATRICULA, c.NOME as CURSO_NOME
+            FROM ALUNO a
+            JOIN CURSO c ON a.ID_CURSO = c.ID
+            WHERE a.MATRICULA = %s
+        """, (student_id,))
         
-        if not rows or rows[0][0] is None:
+        student_info = cur.fetchone()
+        if not student_info:
             return jsonify({'error': 'Aluno não encontrado'}), 404
         
+        # Matrículas do aluno (sem referências a avaliações)
+        cur.execute("""
+            SELECT m.NOME as MATERIA_NOME, o.ANO, o.SEMESTRE, 
+                   ga.STATUS, p.NOME as PROFESSOR_NOME, c.NOME as CURSO_NOME
+            FROM GRADE_ALUNO ga
+            JOIN OFERTA o ON ga.ID_OFERTA = o.ID
+            JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+            JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+            JOIN CURSO c ON o.ID_CURSO = c.ID
+            WHERE ga.ID_ALUNO = %s
+            ORDER BY o.ANO DESC, o.SEMESTRE DESC, m.NOME
+        """, (student_id,))
+        
+        enrollments = cur.fetchall()
+        
         report = {
-            'aluno_nome': rows[0][0],
-            'curso_nome': rows[0][1],
-            'materias': {}
+            'aluno_nome': student_info[0],
+            'matricula': student_info[1],
+            'curso_nome': student_info[2],
+            'matriculas': []
         }
         
-        for row in rows:
-            if row[2]:  # Se tem matéria
-                materia_key = f"{row[2]}_{row[3]}_{row[4]}"
-                if materia_key not in report['materias']:
-                    report['materias'][materia_key] = {
-                        'materia_nome': row[2],
-                        'ano': row[3],
-                        'semestre': row[4],
-                        'status': row[8],
-                        'media_final': row[9],
-                        'media_aprovacao': row[10],
-                        'avaliacoes': []
-                    }
-                
-                if row[5]:  # Se tem avaliação
-                    report['materias'][materia_key]['avaliacoes'].append({
-                        'tipo': row[5],
-                        'peso': row[6],
-                        'nota': row[7]
-                    })
-        
-        # Converter dict para list
-        report['materias'] = list(report['materias'].values())
+        for enrollment in enrollments:
+            report['matriculas'].append({
+                'materia_nome': enrollment[0],
+                'ano': enrollment[1],
+                'semestre': enrollment[2],
+                'status': enrollment[3],
+                'professor_nome': enrollment[4],
+                'curso_nome': enrollment[5]
+            })
         
         return jsonify(report), 200
     except Exception as e:
@@ -75,14 +66,13 @@ def professor_workload(professor_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Informações do professor
-        sql_prof = "SELECT NOME, EMAIL, STATUS FROM PROFESSOR WHERE ID_PROFESSOR = " + str(professor_id)
-        cur.execute(sql_prof)
+        # Informações do professor
+        cur.execute("SELECT NOME, EMAIL, STATUS FROM PROFESSOR WHERE ID_PROFESSOR = %s", (professor_id,))
         professor_info = cur.fetchone()
         if not professor_info:
             return jsonify({'error': 'Professor não encontrado'}), 404
         
-        # VULNERÁVEL: Ofertas por semestre
+        # Ofertas por semestre
         sql_offers = """
             SELECT o.ANO, o.SEMESTRE, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                    m.CARGA_HORARIA, COUNT(ga.ID_ALUNO) as TOTAL_ALUNOS
@@ -90,11 +80,11 @@ def professor_workload(professor_id):
             JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
             JOIN CURSO c ON o.ID_CURSO = c.ID
             LEFT JOIN GRADE_ALUNO ga ON o.ID = ga.ID_OFERTA
-            WHERE o.ID_PROFESSOR = """ + str(professor_id) + """
+            WHERE o.ID_PROFESSOR = %s
             GROUP BY o.ANO, o.SEMESTRE, m.NOME, c.NOME, m.CARGA_HORARIA, o.ID
             ORDER BY o.ANO DESC, o.SEMESTRE DESC
         """
-        cur.execute(sql_offers)
+        cur.execute(sql_offers, (professor_id,))
         
         offers = cur.fetchall()
         

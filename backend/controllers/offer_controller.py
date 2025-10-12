@@ -247,15 +247,6 @@ def delete_offer(offer_id):
     cur = conn.cursor()
     try:
         # Verificar se a oferta tem avaliações (AVALIACAO.ID_OFERTA referencia OFERTA.ID)
-        sql_check_eval = "SELECT COUNT(1) FROM AVALIACAO WHERE ID_OFERTA = " + str(offer_id)
-        cur.execute(sql_check_eval)
-        evaluation_count = cur.fetchone()[0]
-        if evaluation_count > 0:
-            return jsonify({
-                'success': False,
-                'message': 'Oferta possui avaliações e não pode ser excluída. Remova-as antes.'
-            }), 400
-        
         # Verificar se a oferta tem matrículas de alunos (GRADE_ALUNO.ID_OFERTA referencia OFERTA.ID)
         sql_check_grades = "SELECT COUNT(1) FROM GRADE_ALUNO WHERE ID_OFERTA = " + str(offer_id)
         cur.execute(sql_check_grades)

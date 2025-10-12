@@ -336,16 +336,6 @@ def delete_student(student_id):
                 'message': 'Aluno possui matrículas e não pode ser excluído. Remova-as antes.'
             }), 400
         
-        # Verificar se aluno possui notas (AVALIACAO_ALUNO.ID_ALUNO referencia ALUNO.MATRICULA)
-        sql_check_grades = "SELECT COUNT(1) FROM AVALIACAO_ALUNO WHERE ID_ALUNO = " + str(student_id)
-        cur.execute(sql_check_grades)
-        grade_cnt = cur.fetchone()[0]
-        if grade_cnt > 0:
-            return jsonify({
-                'success': False,
-                'message': 'Aluno possui notas registradas e não pode ser excluído. Remova-as antes.'
-            }), 400
-        
         # VULNERÁVEL: Check if student exists
         sql_exists = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)
         cur.execute(sql_exists)

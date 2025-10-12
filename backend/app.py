@@ -6,9 +6,7 @@ from controllers import (
     professor_controller,
     subject_controller,
     offer_controller,
-    evaluation_controller,
     grade_student_controller,
-    student_evaluation_controller,
     reports_controller
 )
 
@@ -37,9 +35,7 @@ app.register_blueprint(course_controller.bp, url_prefix="/api")
 app.register_blueprint(professor_controller.bp, url_prefix="/api")
 app.register_blueprint(subject_controller.bp, url_prefix="/api")
 app.register_blueprint(offer_controller.bp, url_prefix="/api")
-app.register_blueprint(evaluation_controller.bp, url_prefix="/api")
 app.register_blueprint(grade_student_controller.bp, url_prefix="/api")
-app.register_blueprint(student_evaluation_controller.bp, url_prefix="/api")
 app.register_blueprint(reports_controller.bp, url_prefix="/api")
 
 if __name__ == "__main__":

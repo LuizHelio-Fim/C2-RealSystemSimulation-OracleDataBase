@@ -512,9 +512,7 @@ function generateReport(type) {
         Professores: ${appState.professors.length}
         Matérias: ${appState.subjects.length}
         Ofertas: ${appState.offers.length}
-        Avaliações: ${appState.evaluations.length}
         Matrículas: ${appState.enrollments.length}
-        Notas: ${appState.grades.length}
       `
       break
   }
