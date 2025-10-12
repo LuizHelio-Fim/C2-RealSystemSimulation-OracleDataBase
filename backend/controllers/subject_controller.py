@@ -175,17 +175,42 @@ def update_subject(subject_id, course_id):
             update_fields = []
             params = {'id_materia': subject_id, 'id_curso': course_id}
             
+            print(f"DEBUG - Dados recebidos: {data}")  # Log para debug
+            
             if 'periodo' in data:
-                update_fields.append("PERIODO = :periodo")
-                params['periodo'] = data['periodo']
+                try:
+                    # Garantir que periodo seja um número inteiro
+                    periodo_value = int(data['periodo']) if data['periodo'] else None
+                    update_fields.append("PERIODO = :periodo")
+                    params['periodo'] = periodo_value
+                    print(f"DEBUG - Periodo convertido: {periodo_value}")
+                except (ValueError, TypeError) as e:
+                    return jsonify({'error': f'Período deve ser um número válido: {data["periodo"]}'}), 400
             
             if 'nome' in data:
                 update_fields.append("NOME = :nome")
                 params['nome'] = data['nome']
+                print(f"DEBUG - Nome: {data['nome']}")
                 
             if 'carga_horaria' in data:
-                update_fields.append("CARGA_HORARIA = :carga_horaria")
-                params['carga_horaria'] = data['carga_horaria']
+                try:
+                    # Garantir que carga_horaria seja um número inteiro
+                    carga_value = int(data['carga_horaria']) if data['carga_horaria'] else None
+                    update_fields.append("CARGA_HORARIA = :carga_horaria")
+                    params['carga_horaria'] = carga_value
+                    print(f"DEBUG - Carga horária convertida: {carga_value}")
+                except (ValueError, TypeError) as e:
+                    return jsonify({'error': f'Carga horária deve ser um número válido: {data["carga_horaria"]}'}), 400
+            
+            if 'id_curso' in data:
+                try:
+                    # Garantir que id_curso seja um número inteiro
+                    id_curso_value = int(data['id_curso']) if data['id_curso'] else None
+                    update_fields.append("ID_CURSO = :new_id_curso")
+                    params['new_id_curso'] = id_curso_value
+                    print(f"DEBUG - ID Curso convertido: {id_curso_value}")
+                except (ValueError, TypeError) as e:
+                    return jsonify({'error': f'ID do curso deve ser um número válido: {data["id_curso"]}'}), 400
 
             if not update_fields:
                 return jsonify({'error': 'Nenhum campo para atualizar foi fornecido'}), 400

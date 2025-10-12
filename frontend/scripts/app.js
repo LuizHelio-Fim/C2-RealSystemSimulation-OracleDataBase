@@ -547,6 +547,11 @@ function startInlineEdit(entityType, id, row) {
     const originalValue = cell.textContent.trim();
     originalRowData[index] = originalValue;
     
+    // Para subjects, o ID Matéria (index 0) não deve ser editável
+    if (entityType === 'subject' && index === 0) {
+      return; // Pular a edição do ID Matéria
+    }
+    
     // Determinar o tipo de input baseado no conteúdo e posição
     let inputType = 'text';
     let inputValue = originalValue;
@@ -798,10 +803,16 @@ async function saveInlineEdit(entityType, id) {
       updatedData.carga_horaria_total = inputs[1]?.value || ''; // 3ª célula - Carga Horária
     } else if (entityType === 'subject') {
       const inputs = editingRow.querySelectorAll('input');
-      updatedData.id_curso = inputs[1]?.value || '';  // 2ª célula - ID Curso
-      updatedData.periodo = inputs[2]?.value || '';   // 3ª célula - Período
-      updatedData.nome = inputs[3]?.value || '';      // 4ª célula - Nome
-      updatedData.carga_horaria = inputs[4]?.value || ''; // 5ª célula - Carga Horária
+      console.log('Dados do subject - inputs encontrados:', inputs.length); // Debug
+      
+      // Estrutura: ID Matéria (não editável), ID Curso, Período, Nome, Carga Horária
+      // Como ID Matéria não é editável, temos 4 inputs para os outros campos
+      updatedData.id_curso = inputs[0]?.value || '';  // 1º input - ID Curso
+      updatedData.periodo = inputs[1]?.value || '';   // 2º input - Período  
+      updatedData.nome = inputs[2]?.value || '';      // 3º input - Nome
+      updatedData.carga_horaria = inputs[3]?.value || ''; // 4º input - Carga Horária
+      
+      console.log('Dados finais do subject:', updatedData); // Debug
     } else if (entityType === 'offer') {
       const inputs = editingRow.querySelectorAll('input, select');
       console.log('Dados da oferta - inputs encontrados:', inputs.length); // Debug
