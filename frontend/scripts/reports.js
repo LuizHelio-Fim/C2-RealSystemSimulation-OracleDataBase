@@ -7,8 +7,11 @@ async function loadCourseStatisticsReport() {
     showLoading('Carregando estatísticas por curso...');
     const data = await apiService.getCourseStatistics();
     
+    // Detectar se estamos na view específica ou na view geral de reports
+    const courseStatsContent = document.getElementById('courseStatisticsContent');
     const reportContent = document.getElementById('reportContent');
-    reportContent.innerHTML = `
+    const targetContainer = courseStatsContent || reportContent;
+    targetContainer.innerHTML = `
       <div class="report-section">
         <h2>📊 Estatísticas por Curso</h2>
         
@@ -79,8 +82,11 @@ async function loadOffersCompleteReport() {
     showLoading('Carregando relatório de ofertas...');
     const data = await apiService.getOffersCompleteReport();
     
+    // Detectar se estamos na view específica ou na view geral de reports
+    const offersCompleteContent = document.getElementById('offersCompleteContent');
     const reportContent = document.getElementById('reportContent');
-    reportContent.innerHTML = `
+    const targetContainer = offersCompleteContent || reportContent;
+    targetContainer.innerHTML = `
       <div class="report-section">
         <h2>📋 Relatório Completo de Ofertas</h2>
         

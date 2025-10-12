@@ -106,9 +106,19 @@
                     <span>Matrículas</span>
                 </a>
                 -->
-                <a class="nav-item" data-view="reports">
-                    <span class="nav-icon">📈</span>
+                
+                <!-- Divisor Visual -->
+                <div class="nav-divider">
                     <span>Relatórios</span>
+                </div>
+                
+                <a class="nav-item" data-view="courseStatistics">
+                    <span class="nav-icon">📊</span>
+                    <span>Estatísticas por Curso</span>
+                </a>
+                <a class="nav-item" data-view="offersComplete">
+                    <span class="nav-icon">�</span>
+                    <span>Relatório de Ofertas</span>
                 </a>
             </nav>
         </aside>
@@ -490,6 +500,52 @@
                 <div id="reportContent">
                     <div class="info-message">
                         <p>Selecione um relatório acima para visualizar os dados.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Statistics View -->
+            <div id="courseStatisticsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">📊 Estatísticas por Curso</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="loadCourseStatisticsReport()">
+                            🔄 Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Relatório de Estatísticas</h2>
+                    </div>
+                    <div id="courseStatisticsContent">
+                        <div class="loading-message">
+                            <p>Carregando estatísticas...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Offers Complete View -->
+            <div id="offersCompleteView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">📋 Relatório de Ofertas</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="loadOffersCompleteReport()">
+                            🔄 Atualizar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Relatório Completo de Ofertas</h2>
+                    </div>
+                    <div id="offersCompleteContent">
+                        <div class="loading-message">
+                            <p>Carregando relatório de ofertas...</p>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -226,6 +226,13 @@ function switchView(viewName) {
     targetView.style.display = "block"
     // Definir a seção atual para edição inline
     appState.currentSection = viewName;
+    
+    // Carregar dados automaticamente para as novas views de relatório
+    if (viewName === 'courseStatistics') {
+      loadCourseStatisticsReport();
+    } else if (viewName === 'offersComplete') {
+      loadOffersCompleteReport();
+    }
   }
 }
 
