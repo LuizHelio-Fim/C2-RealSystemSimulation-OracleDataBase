@@ -243,7 +243,12 @@ function updateDashboard() {
   document.getElementById("dashProfessors").textContent = appState.professors.length
   document.getElementById("dashSubjects").textContent = appState.subjects.length
   document.getElementById("dashOffers").textContent = appState.offers.length
-  document.getElementById("dashEnrollments").textContent = appState.enrollments.length
+  
+  // Verificar se o elemento existe antes de tentar acessá-lo
+  const dashEnrollmentsElement = document.getElementById("dashEnrollments");
+  if (dashEnrollmentsElement) {
+    dashEnrollmentsElement.textContent = appState.enrollments.length;
+  }
 }
 
 // Funções de carregamento de tabelas
