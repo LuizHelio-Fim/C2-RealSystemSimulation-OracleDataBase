@@ -34,10 +34,12 @@
                     <span class="stat-number" id="totalOffers">0</span>
                     <span class="stat-label">Ofertas</span>
                 </div>
+                <!--
                 <div class="stat-card">
                     <span class="stat-number" id="totalEnrollments">0</span>
                     <span class="stat-label">Matrículas</span>
                 </div>
+                -->
             </div>
 
             <div class="credits">
@@ -98,10 +100,12 @@
                     <span class="nav-icon">🎓</span>
                     <span>Ofertas</span>
                 </a>
+                <!----
                 <a class="nav-item" data-view="enrollments">
                     <span class="nav-icon">✅</span>
                     <span>Matrículas</span>
                 </a>
+                -->
                 <a class="nav-item" data-view="reports">
                     <span class="nav-icon">📈</span>
                     <span>Relatórios</span>
@@ -177,7 +181,7 @@
                         <div class="card-value" id="dashOffers">0</div>
                         <div class="card-description">Ofertas semestrais</div>
                     </div>
-
+                    <!--
                     <div class="dashboard-card">
                         <div class="card-header">
                             <div class="card-icon blue">✅</div>
@@ -188,6 +192,7 @@
                         <div class="card-value" id="dashEnrollments">0</div>
                         <div class="card-description">Matrículas ativas</div>
                     </div>
+                    -->
                 </div>
             </div>
 
@@ -468,48 +473,23 @@
             <!-- Reports View -->
             <div id="reportsView" class="view" style="display: none;">
                 <div class="header">
-                    <h1 class="header-title">Relatórios</h1>
+                    <h1 class="header-title">📊 Relatórios do Sistema</h1>
                 </div>
 
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
-                        <h3 style="margin-bottom: 1rem; color: var(--color-primary);">Relatório de Alunos</h3>
-                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
-                            Visualize estatísticas completas sobre alunos cadastrados
-                        </p>
-                        <button class="btn btn-secondary" onclick="generateReport('students')">
-                            📊 Ver Relatório
-                        </button>
-                    </div>
+                <!-- Seletor de Relatórios -->
+                <div class="report-selector" style="margin-bottom: 2rem;">
+                    <button class="btn btn-primary" onclick="loadCourseStatisticsReport()" style="margin-right: 1rem;">
+                        📈 Estatísticas por Curso
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadOffersCompleteReport()">
+                        � Relatório de Ofertas Completas
+                    </button>
+                </div>
 
-                    <div class="dashboard-card">
-                        <h3 style="margin-bottom: 1rem; color: var(--color-accent);">Relatório de Cursos</h3>
-                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
-                            Análise detalhada dos cursos e suas matérias
-                        </p>
-                        <button class="btn btn-secondary" onclick="generateReport('courses')">
-                            📊 Ver Relatório
-                        </button>
-                    </div>
-
-                    <div class="dashboard-card">
-                        <h3 style="margin-bottom: 1rem; color: var(--color-primary);">Relatório de Professores</h3>
-                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
-                            Carga de trabalho e ofertas por professor
-                        </p>
-                        <button class="btn btn-secondary" onclick="generateReport('professors')">
-                            📊 Ver Relatório
-                        </button>
-                    </div>
-
-                    <div class="dashboard-card">
-                        <h3 style="margin-bottom: 1rem; color: var(--color-accent);">Dashboard Geral</h3>
-                        <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
-                            Visão completa de todas as estatísticas do sistema
-                        </p>
-                        <button class="btn btn-accent" onclick="generateReport('dashboard')">
-                            📈 Ver Dashboard
-                        </button>
+                <!-- Conteúdo dos Relatórios -->
+                <div id="reportContent">
+                    <div class="info-message">
+                        <p>Selecione um relatório acima para visualizar os dados.</p>
                     </div>
                 </div>
             </div>
@@ -522,6 +502,7 @@
     <!-- Scripts de integração com backend -->
     <script src="scripts/api-service.js"></script>
     <script src="scripts/crud-operations.js"></script>
+    <script src="scripts/reports.js"></script>
     
     <!-- Script principal da aplicação -->
     <script src="scripts/app.js"></script>

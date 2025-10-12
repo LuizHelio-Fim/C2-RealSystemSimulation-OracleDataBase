@@ -232,11 +232,6 @@ class ApiService {
   }
 
   // ===== REPORTS API =====
-
-  async getProfessorWorkload(professorId) {
-    return await this.request(`/reports/professor-workload/${professorId}`);
-  }
-
   async getDashboard() {
     return await this.request('/reports/dashboard');
   }
@@ -370,6 +365,17 @@ class DataManager {
       return [];
     }
   }
+
+  // ===== REPORTS API =====
+  async getCourseStatistics() {
+    return await this.request('/reports/course-statistics');
+  }
+
+  async getOffersCompleteReport() {
+    return await this.request('/reports/offers-complete');
+  }
+
+
 
   // Método para recarregar todos os dados
   async refreshAllData() {
