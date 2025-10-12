@@ -3,8 +3,45 @@ from db.db_conn import get_connection, release_connection
 
 bp = Blueprint('grade_student', __name__)
 
+def calculate_student_average(student_id, offer_id, conn):
+    """Calcula a média final de um aluno em uma oferta baseada nas notas das avaliações"""
+    cur = conn.cursor()
+    try:
+        # Buscar todas as notas do aluno nesta oferta com os pesos das avaliações
+        sql = """
+        SELECT aa.NOTA, a.PESO
+        FROM AVALIACAO_ALUNO aa
+        JOIN AVALIACAO a ON aa.ID_AVALIACAO = a.ID
+        WHERE aa.ID_ALUNO = :student_id
+        AND a.ID_OFERTA = :offer_id
+        """
+        cur.execute(sql, {'student_id': student_id, 'offer_id': offer_id})
+        grades = cur.fetchall()
+        
+        if not grades:
+            return None  # Sem notas, média é nula
+        
+        # Calcular média ponderada
+        total_weighted_score = 0
+        total_weight = 0
+        
+        for grade, weight in grades:
+            total_weighted_score += grade * weight
+            total_weight += weight
+        
+        if total_weight == 0:
+            return None
+        
+        return round(total_weighted_score / total_weight, 2)
+    
+    except Exception as e:
+        print(f"Erro ao calcular média: {str(e)}")
+        return None
+    finally:
+        cur.close()
+
 def refresh_grade_student_table():
-    """Atualiza completamente a tabela GRADE_ALUNO com todas as matrículas dos alunos"""
+    """Atualiza completamente a tabela GRADE_ALUNO com todas as matrículas e calcula as médias"""
     conn = get_connection()
     cur = conn.cursor()
     
@@ -25,13 +62,15 @@ def refresh_grade_student_table():
         cur.execute(sql_students_offers)
         enrollments = cur.fetchall()
         
-        # Para cada combinação aluno-oferta, inserir a matrícula
+        # Para cada combinação aluno-oferta, calcular a média e inserir
         for student_id, offer_id, student_status in enrollments:
+            # Calcular média final
+            average = calculate_student_average(student_id, offer_id, conn)
             
-            # Inserir na tabela GRADE_ALUNO (sem MEDIA_FINAL)
+            # Inserir na tabela GRADE_ALUNO
             insert_sql = """
-            INSERT INTO GRADE_ALUNO (ID_ALUNO, ID_OFERTA, STATUS) 
-            VALUES (""" + str(student_id) + """, """ + str(offer_id) + """, '""" + str(student_status) + """')
+            INSERT INTO GRADE_ALUNO (ID_ALUNO, ID_OFERTA, STATUS, MEDIA_FINAL) 
+            VALUES (""" + str(student_id) + """, """ + str(offer_id) + """, '""" + str(student_status) + """', """ + (str(average) if average is not None else "NULL") + """)
             """
             cur.execute(insert_sql)
         
@@ -65,7 +104,7 @@ def list_enrollments():
     cur = conn.cursor()
     try:
         sql = """
-        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
+        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS, ga.MEDIA_FINAL,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
         FROM GRADE_ALUNO ga
@@ -84,12 +123,13 @@ def list_enrollments():
                 'matricula': row[0],  # Changed from id_aluno to matricula
                 'id_oferta': row[1],
                 'status': row[2],
-                'aluno_nome': row[3],
-                'materia_nome': row[4],
-                'curso_nome': row[5],
-                'professor_nome': row[6],
-                'ano': row[7],
-                'semestre': row[8]
+                'media_final': row[3],
+                'aluno_nome': row[4],
+                'materia_nome': row[5],
+                'curso_nome': row[6],
+                'professor_nome': row[7],
+                'ano': row[8],
+                'semestre': row[9]
             })
         return jsonify(enrollments), 200
     except Exception as e:
@@ -105,7 +145,7 @@ def get_enrollment(student_id, offer_id):
     cur = conn.cursor()
     try:
         sql = """
-        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
+        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS, ga.MEDIA_FINAL,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
         FROM GRADE_ALUNO ga
@@ -123,12 +163,13 @@ def get_enrollment(student_id, offer_id):
                 'matricula': row[0],  # Changed from id_aluno to matricula
                 'id_oferta': row[1],
                 'status': row[2],
-                'aluno_nome': row[3],
-                'materia_nome': row[4],
-                'curso_nome': row[5],
-                'professor_nome': row[6],
-                'ano': row[7],
-                'semestre': row[8]
+                'media_final': row[3],
+                'aluno_nome': row[4],
+                'materia_nome': row[5],
+                'curso_nome': row[6],
+                'professor_nome': row[7],
+                'ano': row[8],
+                'semestre': row[9]
             }
             return jsonify(enrollment), 200
         return jsonify({'error': 'Matrícula não encontrada'}), 404
@@ -148,7 +189,7 @@ def get_student_enrollments(student_id):
     cur = conn.cursor()
     try:
         sql = """
-        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
+        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS, ga.MEDIA_FINAL,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
         FROM GRADE_ALUNO ga
@@ -168,12 +209,13 @@ def get_student_enrollments(student_id):
                 'matricula': row[0],  # Changed from id_aluno to matricula
                 'id_oferta': row[1],
                 'status': row[2],
-                'aluno_nome': row[3],
-                'materia_nome': row[4],
-                'curso_nome': row[5],
-                'professor_nome': row[6],
-                'ano': row[7],
-                'semestre': row[8]
+                'media_final': row[3],
+                'aluno_nome': row[4],
+                'materia_nome': row[5],
+                'curso_nome': row[6],
+                'professor_nome': row[7],
+                'ano': row[8],
+                'semestre': row[9]
             })
         return jsonify(enrollments), 200
     except Exception as e:
@@ -189,7 +231,7 @@ def get_offer_enrollments(offer_id):
     cur = conn.cursor()
     try:
         sql = """
-        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
+        SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS, ga.MEDIA_FINAL,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
         FROM GRADE_ALUNO ga
@@ -209,16 +251,46 @@ def get_offer_enrollments(offer_id):
                 'matricula': row[0],  # Changed from id_aluno to matricula
                 'id_oferta': row[1],
                 'status': row[2],
-                'aluno_nome': row[3],
-                'materia_nome': row[4],
-                'curso_nome': row[5],
-                'professor_nome': row[6],
-                'ano': row[7],
-                'semestre': row[8]
+                'media_final': row[3],
+                'aluno_nome': row[4],
+                'materia_nome': row[5],
+                'curso_nome': row[6],
+                'professor_nome': row[7],
+                'ano': row[8],
+                'semestre': row[9]
             })
         return jsonify(enrollments), 200
     except Exception as e:
         return jsonify({'error': f'Erro ao listar matrículas da oferta: {str(e)}'}), 500
+    finally:
+        cur.close()
+        release_connection(conn)
+
+# Função para ser chamada quando uma nota é adicionada/atualizada
+def update_student_average(student_id, offer_id):
+    """Atualiza a média final de um aluno específico quando uma nota é modificada"""
+    conn = get_connection()
+    cur = conn.cursor()
+    
+    try:
+        # Calcular nova média
+        average = calculate_student_average(student_id, offer_id, conn)
+        
+        # Atualizar na tabela GRADE_ALUNO
+        update_sql = """
+        UPDATE GRADE_ALUNO 
+        SET MEDIA_FINAL = """ + (str(average) if average is not None else "NULL") + """
+        WHERE ID_ALUNO = """ + str(student_id) + """ AND ID_OFERTA = """ + str(offer_id) + """
+        """
+        cur.execute(update_sql)
+        conn.commit()
+        
+        return True
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao atualizar média do aluno: {str(e)}")
+        return False
     finally:
         cur.close()
         release_connection(conn)

@@ -224,8 +224,6 @@ def update_student(student_id):
                 'success': False,
                 'message': 'Dados JSON são obrigatórios'
             }), 400
-            
-        print(f"Dados recebidos para atualizar student {student_id}: {data}")  # Debug
 
         conn = get_connection()
         cur = conn.cursor()
@@ -257,15 +255,12 @@ def update_student(student_id):
             data_nasc = data.get('data_nasc') or data.get('data_nascimento')
             if data_nasc is not None:
                 try:
-                    print(f"Data recebida: '{data_nasc}' (tipo: {type(data_nasc)})")  # Debug
                     formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
-                    print(f"Data formatada: '{formatted_date}'")  # Debug
                     if formatted_date:
                         update_parts.append("DATA_NASC = TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')")
                     else:
                         update_parts.append("DATA_NASC = NULL")
                 except ValueError as ve:
-                    print(f"Erro ao formatar data: {str(ve)}")  # Debug
                     return jsonify({
                         'success': False,
                         'message': f'Erro ao atualizar estudante: {str(ve)}'
@@ -297,7 +292,6 @@ def update_student(student_id):
                 }), 400
 
             sql = "UPDATE ALUNO SET " + ", ".join(update_parts) + " WHERE MATRICULA = " + str(student_id)
-            print(f"SQL de atualização do estudante: {sql}")  # Debug
             cur.execute(sql)
             conn.commit()
             
@@ -342,7 +336,15 @@ def delete_student(student_id):
                 'message': 'Aluno possui matrículas e não pode ser excluído. Remova-as antes.'
             }), 400
         
-        # Verificação de notas removida - não há mais tabela AVALIACAO_ALUNO
+        # Verificar se aluno possui notas (AVALIACAO_ALUNO.ID_ALUNO referencia ALUNO.MATRICULA)
+        sql_check_grades = "SELECT COUNT(1) FROM AVALIACAO_ALUNO WHERE ID_ALUNO = " + str(student_id)
+        cur.execute(sql_check_grades)
+        grade_cnt = cur.fetchone()[0]
+        if grade_cnt > 0:
+            return jsonify({
+                'success': False,
+                'message': 'Aluno possui notas registradas e não pode ser excluído. Remova-as antes.'
+            }), 400
         
         # VULNERÁVEL: Check if student exists
         sql_exists = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)

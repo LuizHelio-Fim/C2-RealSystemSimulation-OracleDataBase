@@ -408,11 +408,11 @@ function loadOffersTable() {
       <td>${offer.id}</td>
       <td>${offer.ano}</td>
       <td>${offer.semestre}º</td>
-      <td>${offer.professor_nome || '-'}</td>
-      <td>${offer.materia_nome || '-'}</td>
+      <td data-id="${offer.id_professor}">${offer.professor_nome || '-'} (ID: ${offer.id_professor})</td>
+      <td data-id="${offer.id_materia}" data-curso-id="${offer.id_curso}">${offer.materia_nome || '-'} (ID: ${offer.id_materia})</td>
       <td>
         <div class="table-actions">
-          <button class="icon-btn edit" onclick="editOffer(${offer.id})" title="Editar">✏️</button>
+          <button class="icon-btn edit" onclick="startInlineEdit('offer', ${offer.id}, this.closest('tr'))" title="Editar">✏️</button>
           <button class="icon-btn delete" onclick="deleteOffer(${offer.id})" title="Excluir">🗑️</button>
         </div>
       </td>
@@ -613,6 +613,63 @@ function startInlineEdit(entityType, id, row) {
       } else if (index === 1) { // ID Curso
         inputType = 'number';
       }
+    } else if (entityType === 'offer') {
+      // Estrutura: ID, Ano, Semestre, Professor, Matéria, Ações
+      if (index === 1) { // Ano
+        inputType = 'number';
+      } else if (index === 2) { // Semestre
+        inputValue = originalValue.replace('º', '');
+        const select = document.createElement('select');
+        select.innerHTML = `
+          <option value="1" ${inputValue === '1' ? 'selected' : ''}>1º</option>
+          <option value="2" ${inputValue === '2' ? 'selected' : ''}>2º</option>
+        `;
+        cell.innerHTML = '';
+        cell.appendChild(select);
+        cell.classList.add('editable-cell');
+        return;
+      } else if (index === 3) { // Professor - editar ID do professor
+        const professorId = cell.getAttribute('data-id');
+        inputType = 'number';
+        inputValue = professorId || '';
+        
+        const input = document.createElement('input');
+        input.type = inputType;
+        input.value = inputValue;
+        input.placeholder = 'ID do Professor';
+        
+        cell.innerHTML = '';
+        cell.appendChild(input);
+        cell.classList.add('editable-cell');
+        return;
+      } else if (index === 4) { // Matéria - editar ID da matéria e curso
+        const materiaId = cell.getAttribute('data-id');
+        const cursoId = cell.getAttribute('data-curso-id');
+        
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.gap = '5px';
+        
+        const materiaInput = document.createElement('input');
+        materiaInput.type = 'number';
+        materiaInput.value = materiaId || '';
+        materiaInput.placeholder = 'ID Matéria';
+        materiaInput.style.flex = '1';
+        
+        const cursoInput = document.createElement('input');
+        cursoInput.type = 'number';
+        cursoInput.value = cursoId || '';
+        cursoInput.placeholder = 'ID Curso';
+        cursoInput.style.flex = '1';
+        
+        container.appendChild(materiaInput);
+        container.appendChild(cursoInput);
+        
+        cell.innerHTML = '';
+        cell.appendChild(container);
+        cell.classList.add('editable-cell');
+        return;
+      }
     }
     
     // Criar input para campos editáveis (exceto primeiro campo que geralmente é ID)
@@ -668,10 +725,19 @@ function cancelInlineEdit() {
   const entityType = getCurrentEntityType();
   const id = getEntityIdFromRow(editingRow);
   
+  // Mapear os tipos de entidade para as funções de delete corretas
+  const deleteFunction = {
+    'student': 'deleteStudent',
+    'professor': 'deleteProfessor',
+    'course': 'deleteCourse',
+    'subject': 'deleteSubject',
+    'offer': 'deleteOffer'
+  }[entityType] || `delete${capitalizeFirst(entityType)}`;
+
   actionsCell.innerHTML = `
     <div class="table-actions">
       <button class="icon-btn edit" onclick="startInlineEdit('${entityType}', ${id}, this.closest('tr'))" title="Editar">✏️</button>
-      <button class="icon-btn delete" onclick="delete${capitalizeFirst(entityType)}(${id})" title="Excluir">🗑️</button>
+      <button class="icon-btn delete" onclick="${deleteFunction}(${id})" title="Excluir">🗑️</button>
     </div>
   `;
 
@@ -738,6 +804,18 @@ async function saveInlineEdit(entityType, id) {
       updatedData.periodo = inputs[2]?.value || '';   // 3ª célula - Período
       updatedData.nome = inputs[3]?.value || '';      // 4ª célula - Nome
       updatedData.carga_horaria = inputs[4]?.value || ''; // 5ª célula - Carga Horária
+    } else if (entityType === 'offer') {
+      const inputs = editingRow.querySelectorAll('input, select');
+      console.log('Dados da oferta - inputs encontrados:', inputs.length); // Debug
+      
+      // Estrutura: ID(0), Ano(1), Semestre(2), Professor ID(3), Matéria/Curso IDs(4), Ações(5)
+      updatedData.ano = inputs[0]?.value || '';  // 1ª input - Ano
+      updatedData.semestre = inputs[1]?.value || ''; // 2ª input/select - Semestre
+      updatedData.id_professor = inputs[2]?.value || ''; // 3ª input - ID Professor
+      updatedData.id_materia = inputs[3]?.value || ''; // 4ª input - ID Matéria
+      updatedData.id_curso = inputs[4]?.value || ''; // 5ª input - ID Curso
+      
+      console.log('Dados finais da oferta:', updatedData); // Debug
     }
 
     // Chamar a função CRUD apropriada
@@ -749,6 +827,8 @@ async function saveInlineEdit(entityType, id) {
       await updateCourse(id, updatedData);
     } else if (entityType === 'subject') {
       await updateSubject(id, updatedData);
+    } else if (entityType === 'offer') {
+      await updateOffer(id, updatedData);
     }
 
     // Limpar estado de edição

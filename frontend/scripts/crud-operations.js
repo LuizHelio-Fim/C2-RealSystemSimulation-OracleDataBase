@@ -383,39 +383,8 @@ async function addOffer() {
   }
 }
 
-async function editOffer(id) {
-  try {
-    // Garantir que os dados estão carregados
-    if (!dataManager.state.offers || dataManager.state.offers.length === 0) {
-      await dataManager.loadOffers();
-    }
-    
-    const offer = dataManager.state.offers.find(o => o.id === id);
-    if (!offer) {
-      showNotification("Oferta não encontrada!", "error");
-      return;
-    }
-
-    const formData = await showEditForm('Editar Oferta', [
-      { name: 'ano', label: 'Ano', type: 'number', value: offer.ano, required: true },
-      { name: 'semestre', label: 'Semestre', type: 'select', options: [1, 2], value: offer.semestre, required: true },
-      { name: 'id_professor', label: 'ID Professor', type: 'number', value: offer.id_professor, required: true },
-      { name: 'id_materia', label: 'ID Matéria', type: 'number', value: offer.id_materia, required: true },
-      { name: 'id_curso', label: 'ID Curso', type: 'number', value: offer.id_curso, required: true }
-    ]);
-
-    if (formData) {
-      await apiService.updateOffer(id, formData);
-      await dataManager.loadOffers();
-      loadOffersTable();
-      updateDashboard();
-      showNotification("Oferta atualizada com sucesso!", "success");
-    }
-  } catch (error) {
-    console.error('Erro ao editar oferta:', error);
-    showNotification(`Erro ao editar oferta: ${error.message}`, "error");
-  }
-}
+// Função editOffer removida - agora usa edição inline como as outras entidades
+// A edição de ofertas é feita através do startInlineEdit() no app.js
 
 async function deleteOffer(id) {
   if (!confirm("Tem certeza que deseja excluir esta oferta?")) return;
@@ -731,6 +700,18 @@ async function updateSubject(id, subjectData) {
     updateDashboard();
   } catch (error) {
     console.error('Erro ao atualizar matéria:', error);
+    throw error;
+  }
+}
+
+async function updateOffer(id, offerData) {
+  try {
+    await apiService.updateOffer(id, offerData);
+    await dataManager.loadOffers();
+    loadOffersTable();
+    updateDashboard();
+  } catch (error) {
+    console.error('Erro ao atualizar oferta:', error);
     throw error;
   }
 }

@@ -35,8 +35,16 @@
                     <span class="stat-label">Ofertas</span>
                 </div>
                 <div class="stat-card">
+                    <span class="stat-number" id="totalEvaluations">0</span>
+                    <span class="stat-label">Avaliações</span>
+                </div>
+                <div class="stat-card">
                     <span class="stat-number" id="totalEnrollments">0</span>
                     <span class="stat-label">Matrículas</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalGrades">0</span>
+                    <span class="stat-label">Notas</span>
                 </div>
             </div>
 
@@ -98,9 +106,17 @@
                     <span class="nav-icon">🎓</span>
                     <span>Ofertas</span>
                 </a>
+                <a class="nav-item" data-view="evaluations">
+                    <span class="nav-icon">📝</span>
+                    <span>Avaliações</span>
+                </a>
                 <a class="nav-item" data-view="enrollments">
                     <span class="nav-icon">✅</span>
                     <span>Matrículas</span>
+                </a>
+                <a class="nav-item" data-view="grades">
+                    <span class="nav-icon">📊</span>
+                    <span>Notas</span>
                 </a>
                 <a class="nav-item" data-view="reports">
                     <span class="nav-icon">📈</span>
@@ -180,6 +196,17 @@
 
                     <div class="dashboard-card">
                         <div class="card-header">
+                            <div class="card-icon orange">📝</div>
+                            <div>
+                                <div class="card-title">Avaliações</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashEvaluations">0</div>
+                        <div class="card-description">Avaliações cadastradas</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
                             <div class="card-icon blue">✅</div>
                             <div>
                                 <div class="card-title">Matrículas</div>
@@ -187,6 +214,17 @@
                         </div>
                         <div class="card-value" id="dashEnrollments">0</div>
                         <div class="card-description">Matrículas ativas</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon orange">📊</div>
+                            <div>
+                                <div class="card-title">Notas</div>
+                            </div>
+                        </div>
+                        <div class="card-value" id="dashGrades">0</div>
+                        <div class="card-description">Notas lançadas</div>
                     </div>
                 </div>
             </div>
@@ -389,6 +427,45 @@
                 </div>
             </div>
 
+            <!-- Evaluations View -->
+            <div id="evaluationsView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Avaliações</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="addEvaluation()">
+                            ➕ Adicionar Avaliação
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Lista de Avaliações</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar avaliação..." onkeyup="filterTable('evaluationsTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="evaluationsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tipo</th>
+                                    <th>Peso</th>
+                                    <th>Data</th>
+                                    <th>ID Oferta</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="evaluationsTableBody">
+                                <tr><td colspan="6" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Enrollments View -->
             <div id="enrollmentsView" class="view" style="display: none;">
                 <div class="header">
@@ -416,6 +493,7 @@
                                     <th>Matrícula</th>
                                     <th>ID Oferta</th>
                                     <th>Status</th>
+                                    <th>Média Final</th>
                                     <th>Aluno</th>
                                     <th>Matéria</th>
                                 </tr>
@@ -428,6 +506,42 @@
                 </div>
             </div>
 
+            <!-- Grades View -->
+            <div id="gradesView" class="view" style="display: none;">
+                <div class="header">
+                    <h1 class="header-title">Notas</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="addGrade()">
+                            ➕ Lançar Nota
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">Avaliação Aluno</h2>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" placeholder="Buscar nota..." onkeyup="filterTable('gradesTable', this.value)">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="gradesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID Avaliação</th>
+                                    <th>ID Aluno</th>
+                                    <th>Nota</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesTableBody">
+                                <tr><td colspan="4" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             <!-- Reports View -->
             <div id="reportsView" class="view" style="display: none;">
