@@ -4,8 +4,11 @@
 
 async function loadCourseStatisticsReport() {
   try {
+    console.log('🔄 [FRONTEND] Iniciando carregamento de estatísticas por curso...');
     showLoading('Carregando estatísticas por curso...');
+    
     const data = await apiService.getCourseStatistics();
+    console.log('✅ [FRONTEND] Dados recebidos:', data);
     
     // Detectar se estamos na view específica ou na view geral de reports
     const courseStatsContent = document.getElementById('courseStatisticsContent');
@@ -71,16 +74,71 @@ async function loadCourseStatisticsReport() {
     
     hideLoading();
   } catch (error) {
-    console.error('Erro ao carregar estatísticas por curso:', error);
-    showNotification('Erro ao carregar relatório de estatísticas por curso', 'error');
+    console.error('❌ [FRONTEND] Erro ao carregar estatísticas por curso:', error);
+    
+    // Extrair detalhes do erro se disponível
+    let errorMessage = 'Erro ao carregar relatório de estatísticas por curso';
+    let errorDetails = '';
+    
+    if (error.message) {
+      errorDetails = error.message;
+    }
+    
+    // Se o erro contém informações do backend
+    if (error.response) {
+      try {
+        const errorData = JSON.parse(error.response);
+        if (errorData.error) {
+          errorDetails = errorData.error;
+        }
+        if (errorData.tipo) {
+          errorMessage += ` (${errorData.tipo})`;
+        }
+        console.error('📋 [FRONTEND] Detalhes do backend:', errorData);
+      } catch (parseError) {
+        console.error('⚠️ [FRONTEND] Erro ao parsear resposta do backend:', parseError);
+      }
+    }
+    
+    // Mostrar container com erro detalhado
+    const courseStatsContent = document.getElementById('courseStatisticsContent');
+    const reportContent = document.getElementById('reportContent');
+    const targetContainer = courseStatsContent || reportContent;
+    
+    if (targetContainer) {
+      targetContainer.innerHTML = `
+        <div class="error-container" style="
+          padding: 2rem; 
+          background: #fef2f2; 
+          border: 1px solid #fecaca; 
+          border-radius: 8px;
+          color: #991b1b;
+        ">
+          <h3>❌ Erro no Relatório</h3>
+          <p><strong>Problema:</strong> ${errorMessage}</p>
+          ${errorDetails ? `<p><strong>Detalhes:</strong> ${errorDetails}</p>` : ''}
+          <p><strong>Sugestões:</strong></p>
+          <ul>
+            <li>Verifique se o backend está rodando</li>
+            <li>Verifique a conexão com o banco de dados</li>
+            <li>Consulte os logs do servidor para mais detalhes</li>
+          </ul>
+        </div>
+      `;
+    }
+    
+    showNotification(errorMessage, 'error');
     hideLoading();
   }
 }
 
 async function loadOffersCompleteReport() {
   try {
+    console.log('🔄 [FRONTEND] Iniciando carregamento de relatório de ofertas...');
     showLoading('Carregando relatório de ofertas...');
+    
     const data = await apiService.getOffersCompleteReport();
+    console.log('✅ [FRONTEND] Dados recebidos:', data);
     
     // Detectar se estamos na view específica ou na view geral de reports
     const offersCompleteContent = document.getElementById('offersCompleteContent');
@@ -152,8 +210,60 @@ async function loadOffersCompleteReport() {
     
     hideLoading();
   } catch (error) {
-    console.error('Erro ao carregar relatório de ofertas:', error);
-    showNotification('Erro ao carregar relatório de ofertas', 'error');
+    console.error('❌ [FRONTEND] Erro ao carregar relatório de ofertas:', error);
+    
+    // Extrair detalhes do erro se disponível
+    let errorMessage = 'Erro ao carregar relatório de ofertas';
+    let errorDetails = '';
+    
+    if (error.message) {
+      errorDetails = error.message;
+    }
+    
+    // Se o erro contém informações do backend
+    if (error.response) {
+      try {
+        const errorData = JSON.parse(error.response);
+        if (errorData.error) {
+          errorDetails = errorData.error;
+        }
+        if (errorData.tipo) {
+          errorMessage += ` (${errorData.tipo})`;
+        }
+        console.error('📋 [FRONTEND] Detalhes do backend:', errorData);
+      } catch (parseError) {
+        console.error('⚠️ [FRONTEND] Erro ao parsear resposta do backend:', parseError);
+      }
+    }
+    
+    // Mostrar container com erro detalhado
+    const offersCompleteContent = document.getElementById('offersCompleteContent');
+    const reportContent = document.getElementById('reportContent');
+    const targetContainer = offersCompleteContent || reportContent;
+    
+    if (targetContainer) {
+      targetContainer.innerHTML = `
+        <div class="error-container" style="
+          padding: 2rem; 
+          background: #fef2f2; 
+          border: 1px solid #fecaca; 
+          border-radius: 8px;
+          color: #991b1b;
+        ">
+          <h3>❌ Erro no Relatório</h3>
+          <p><strong>Problema:</strong> ${errorMessage}</p>
+          ${errorDetails ? `<p><strong>Detalhes:</strong> ${errorDetails}</p>` : ''}
+          <p><strong>Sugestões:</strong></p>
+          <ul>
+            <li>Verifique se o backend está rodando</li>
+            <li>Verifique a conexão com o banco de dados</li>
+            <li>Consulte os logs do servidor para mais detalhes</li>
+          </ul>
+        </div>
+      `;
+    }
+    
+    showNotification(errorMessage, 'error');
     hideLoading();
   }
 }
