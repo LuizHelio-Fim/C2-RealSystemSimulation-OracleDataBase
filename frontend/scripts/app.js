@@ -979,3 +979,107 @@ function convertDateToUserFormat(dateStr) {
   console.log('Data não pôde ser convertida, retornando vazio'); // Debug
   return '';
 }
+
+// ===== FUNÇÕES DE LOADING =====
+let loadingOverlay = null;
+
+function showLoading(message = 'Carregando...') {
+  // Remove loading anterior se existir
+  hideLoading();
+  
+  // Criar overlay de loading
+  loadingOverlay = document.createElement('div');
+  loadingOverlay.id = 'loadingOverlay';
+  loadingOverlay.innerHTML = `
+    <div class="loading-backdrop">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-message">${message}</p>
+      </div>
+    </div>
+  `;
+  
+  // Adicionar estilos inline para garantir que funcionem
+  loadingOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+  `;
+  
+  const backdrop = loadingOverlay.querySelector('.loading-backdrop');
+  if (backdrop) {
+    backdrop.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(2px);
+    `;
+  }
+  
+  const content = loadingOverlay.querySelector('.loading-content');
+  if (content) {
+    content.style.cssText = `
+      text-align: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid #e5e7eb;
+    `;
+  }
+  
+  const spinner = loadingOverlay.querySelector('.loading-spinner');
+  if (spinner) {
+    spinner.style.cssText = `
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    `;
+  }
+  
+  const messageEl = loadingOverlay.querySelector('.loading-message');
+  if (messageEl) {
+    messageEl.style.cssText = `
+      margin: 0;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+  }
+  
+  // Adicionar animação CSS se não existir
+  if (!document.querySelector('#loadingStyles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'loadingStyles';
+    styleSheet.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+  }
+  
+  document.body.appendChild(loadingOverlay);
+  
+  console.log('🔄 Loading mostrado:', message);
+}
+
+function hideLoading() {
+  if (loadingOverlay && loadingOverlay.parentNode) {
+    loadingOverlay.parentNode.removeChild(loadingOverlay);
+    loadingOverlay = null;
+    console.log('✅ Loading ocultado');
+  }
+}
