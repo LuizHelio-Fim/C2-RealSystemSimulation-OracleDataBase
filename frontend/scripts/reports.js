@@ -77,7 +77,7 @@ async function loadCourseStatisticsReport() {
                 <th>Total Ofertas</th>
                 <th>Matrículas Ativas</th>
                 <th>% Alunos</th>
-                <th>Média Alunos/Oferta</th>
+                <th>Ofertas Ano Atual</th>
               </tr>
             </thead>
             <tbody>
@@ -90,7 +90,7 @@ async function loadCourseStatisticsReport() {
                   <td>${curso.total_ofertas}</td>
                   <td>${curso.total_matriculas_ativas}</td>
                   <td>${curso.percentual_alunos}%</td>
-                  <td>${curso.media_alunos_por_oferta}</td>
+                  <td>${curso.ofertas_ano_atual}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -242,7 +242,7 @@ async function loadOffersCompleteReport() {
                 <th>Email Professor</th>
                 <th>Status Prof.</th>
                 <th>Matriculados</th>
-                <th>Ocupação</th>
+                <th>Carga Total Curso</th>
               </tr>
             </thead>
             <tbody>
@@ -258,7 +258,7 @@ async function loadOffersCompleteReport() {
                   <td>${oferta.professor_email}</td>
                   <td><span class="status ${oferta.professor_status.toLowerCase()}">${oferta.professor_status}</span></td>
                   <td><strong>${oferta.total_matriculados}</strong></td>
-                  <td>${oferta.ocupacao_percentual}</td>
+                  <td>${oferta.carga_total_curso}h</td>
                 </tr>
               `).join('')}
             </tbody>

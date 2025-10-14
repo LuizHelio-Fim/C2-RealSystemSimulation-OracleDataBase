@@ -400,9 +400,9 @@ def offers_complete_report():
         processed_offers = 0
         for i, offer in enumerate(offers):
             try:
-                # Calcular ocupação percentual com proteção contra None
+                # Usar campos diretos da consulta
                 total_matriculados = offer[10] or 0
-                ocupacao_perc = (total_matriculados / 40 * 100) if total_matriculados > 0 else 0
+                carga_total_curso = offer[11] or 0
                 
                 offer_detail = {
                     'oferta_id': offer[0] or 0,
@@ -415,7 +415,7 @@ def offers_complete_report():
                     'professor_email': offer[8] or 'Email não informado',
                     'professor_status': offer[9] or 'Status não informado',
                     'total_matriculados': total_matriculados,
-                    'ocupacao_percentual': f"{ocupacao_perc:.1f}%"
+                    'carga_total_curso': carga_total_curso
                 }
                 
                 report['todas_ofertas'].append(offer_detail)
