@@ -176,6 +176,30 @@ async function loadOffersCompleteReport() {
       throw new Error('apiService.getOffersCompleteReport não é uma função');
     }
     
+    // Verificar se backend está online antes de tentar carregar o relatório
+    console.log('🔍 [FRONTEND] Verificando status do backend...');
+    const backendStatus = await api.checkBackendStatus();
+    
+    if (backendStatus.status !== 'online') {
+      console.error('❌ [FRONTEND] Backend não está disponível:', backendStatus);
+      let errorMsg = 'Backend não está disponível';
+      
+      switch (backendStatus.status) {
+        case 'offline':
+          errorMsg = 'Erro de conexão: Backend está offline. Inicie o servidor Flask executando "python app.py" na pasta backend.';
+          break;
+        case 'timeout':
+          errorMsg = 'Timeout: Backend não responde. Verifique se está rodando na porta 5000.';
+          break;
+        case 'error':
+          errorMsg = `Backend respondeu com erro (${backendStatus.code}). Verifique os logs do servidor.`;
+          break;
+      }
+      
+      throw new Error(errorMsg);
+    }
+    
+    console.log('✅ [FRONTEND] Backend confirmado online, carregando relatório...');
     const data = await api.getOffersCompleteReport();
     console.log('✅ [FRONTEND] Dados recebidos:', data);
     

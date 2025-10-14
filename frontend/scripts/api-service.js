@@ -237,11 +237,27 @@ class ApiService {
   }
 
   async getCourseStatistics() {
-    return await this.request('/reports/course-statistics');
+    try {
+      console.log('🔄 [API] Chamando /reports/course-statistics...');
+      const result = await this.request('/reports/course-statistics');
+      console.log('✅ [API] Resposta recebida de /reports/course-statistics');
+      return result;
+    } catch (error) {
+      console.error('❌ [API] Erro em /reports/course-statistics:', error.message);
+      throw error;
+    }
   }
 
   async getOffersCompleteReport() {
-    return await this.request('/reports/offers-complete');
+    try {
+      console.log('🔄 [API] Chamando /reports/offers-complete...');
+      const result = await this.request('/reports/offers-complete');
+      console.log('✅ [API] Resposta recebida de /reports/offers-complete');
+      return result;
+    } catch (error) {
+      console.error('❌ [API] Erro em /reports/offers-complete:', error.message);
+      throw error;
+    }
   }
 
   // ===== MÉTODOS DE TESTE E DIAGNÓSTICO =====
@@ -266,6 +282,38 @@ class ApiService {
     } catch (error) {
       console.error('❌ Teste de endpoint de reports falhou:', error);
       throw error;
+    }
+  }
+
+  // Teste específico para verificar se backend está rodando
+  async checkBackendStatus() {
+    try {
+      console.log('🔄 [API] Verificando status do backend...');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+      
+      const response = await fetch(`${this.baseUrl}/`, {
+        signal: controller.signal,
+        method: 'GET'
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ [API] Backend está rodando:', data);
+        return { status: 'online', data };
+      } else {
+        console.log('⚠️ [API] Backend respondeu com status:', response.status);
+        return { status: 'error', code: response.status };
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('⏰ [API] Timeout - Backend pode estar offline');
+        return { status: 'timeout' };
+      }
+      console.log('❌ [API] Backend parece estar offline:', error.message);
+      return { status: 'offline', error: error.message };
     }
   }
 }

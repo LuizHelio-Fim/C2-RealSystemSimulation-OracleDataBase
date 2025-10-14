@@ -317,7 +317,7 @@ def offers_complete_report():
     try:
         print("🔄 [OFFERS_REPORT] Iniciando geração de relatório de ofertas...")
         
-        # Testar conexão com banco
+        # Estabelecer conexão com banco
         conn = get_connection()
         if not conn:
             raise Exception("Falha ao estabelecer conexão com o banco de dados")
@@ -325,12 +325,6 @@ def offers_complete_report():
         cur = conn.cursor()
         print("✅ [OFFERS_REPORT] Conexão com banco estabelecida com sucesso")
         
-    except Exception as e:
-        error_msg = f"Erro de conexão com banco: {str(e)}"
-        print(f"❌ [OFFERS_REPORT] {error_msg}")
-        return jsonify({'error': error_msg, 'tipo': 'conexao_banco'}), 500
-    
-    try:
         print("📊 [OFFERS_REPORT] Executando consulta principal...")
         
         # Consulta melhorada com COALESCE para tratar NULLs
@@ -377,22 +371,17 @@ def offers_complete_report():
             }), 200
         
         # Estatísticas gerais com tratamento de valores None
-        try:
-            total_offers = len(offers)
-            total_students = sum(offer[10] or 0 for offer in offers)
-            
-            # Usar set para contar únicos, tratando valores None
-            professor_names = {offer[7] for offer in offers if offer[7] and offer[7] != 'Professor não informado'}
-            course_names = {offer[3] for offer in offers if offer[3] and offer[3] != 'Curso não informado'}
-            
-            active_professors = len(professor_names)
-            active_courses = len(course_names)
-            
-            print(f"📊 [OFFERS_REPORT] Estatísticas - Ofertas: {total_offers}, Matriculados: {total_students}")
-            
-        except Exception as e:
-            print(f"❌ [OFFERS_REPORT] Erro ao calcular estatísticas: {e}")
-            raise Exception(f"Erro no processamento das estatísticas: {str(e)}")
+        total_offers = len(offers)
+        total_students = sum(offer[10] or 0 for offer in offers)
+        
+        # Usar set para contar únicos, tratando valores None
+        professor_names = {offer[7] for offer in offers if offer[7] and offer[7] != 'Professor não informado'}
+        course_names = {offer[3] for offer in offers if offer[3] and offer[3] != 'Curso não informado'}
+        
+        active_professors = len(professor_names)
+        active_courses = len(course_names)
+        
+        print(f"📊 [OFFERS_REPORT] Estatísticas - Ofertas: {total_offers}, Matriculados: {total_students}")
         
         report = {
             'resumo_geral': {
@@ -460,10 +449,9 @@ def offers_complete_report():
         try:
             if cur:
                 cur.close()
+                print("🔒 [OFFERS_REPORT] Cursor fechado")
             if conn:
                 release_connection(conn)
-            print("🔒 [OFFERS_REPORT] Conexões fechadas")
+                print("🔒 [OFFERS_REPORT] Conexão liberada")
         except Exception as e:
             print(f"⚠️ [OFFERS_REPORT] Erro ao fechar conexões: {e}")
-        cur.close()
-        release_connection(conn)
