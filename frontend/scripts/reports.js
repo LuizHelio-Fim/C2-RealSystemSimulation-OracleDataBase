@@ -1,5 +1,24 @@
 // reports.js - Funções para gerar e exibir relatórios
 
+// ===== VERIFICAÇÃO DE DEPENDÊNCIAS =====
+function ensureApiService() {
+  if (typeof apiService === 'undefined' || !apiService) {
+    console.error('❌ apiService não está disponível globalmente');
+    throw new Error('apiService não está disponível. Verifique se api-service.js foi carregado corretamente.');
+  }
+  
+  // Log de debug para verificar o que está disponível
+  console.log('🔍 Verificando apiService:', {
+    exists: typeof apiService !== 'undefined',
+    isObject: typeof apiService === 'object',
+    constructor: apiService?.constructor?.name,
+    hasCourseStats: typeof apiService?.getCourseStatistics === 'function',
+    hasOffersReport: typeof apiService?.getOffersCompleteReport === 'function'
+  });
+  
+  return apiService;
+}
+
 // ===== FUNÇÕES DE RELATÓRIOS =====
 
 async function loadCourseStatisticsReport() {
@@ -7,7 +26,17 @@ async function loadCourseStatisticsReport() {
     console.log('🔄 [FRONTEND] Iniciando carregamento de estatísticas por curso...');
     showLoading('Carregando estatísticas por curso...');
     
-    const data = await apiService.getCourseStatistics();
+    // Verificar se apiService e a função existem
+    const api = ensureApiService();
+    
+    if (typeof api.getCourseStatistics !== 'function') {
+      console.error('❌ apiService.getCourseStatistics não é uma função');
+      console.log('apiService disponível:', api);
+      console.log('Métodos disponíveis:', Object.getOwnPropertyNames(Object.getPrototypeOf(api)));
+      throw new Error('apiService.getCourseStatistics não é uma função');
+    }
+    
+    const data = await api.getCourseStatistics();
     console.log('✅ [FRONTEND] Dados recebidos:', data);
     
     // Detectar se estamos na view específica ou na view geral de reports
@@ -137,7 +166,17 @@ async function loadOffersCompleteReport() {
     console.log('🔄 [FRONTEND] Iniciando carregamento de relatório de ofertas...');
     showLoading('Carregando relatório de ofertas...');
     
-    const data = await apiService.getOffersCompleteReport();
+    // Verificar se apiService e a função existem
+    const api = ensureApiService();
+    
+    if (typeof api.getOffersCompleteReport !== 'function') {
+      console.error('❌ apiService.getOffersCompleteReport não é uma função');
+      console.log('apiService disponível:', api);
+      console.log('Métodos disponíveis:', Object.getOwnPropertyNames(Object.getPrototypeOf(api)));
+      throw new Error('apiService.getOffersCompleteReport não é uma função');
+    }
+    
+    const data = await api.getOffersCompleteReport();
     console.log('✅ [FRONTEND] Dados recebidos:', data);
     
     // Detectar se estamos na view específica ou na view geral de reports
