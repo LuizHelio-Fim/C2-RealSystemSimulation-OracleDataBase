@@ -235,6 +235,39 @@ class ApiService {
   async getDashboard() {
     return await this.request('/reports/dashboard');
   }
+
+  async getCourseStatistics() {
+    return await this.request('/reports/course-statistics');
+  }
+
+  async getOffersCompleteReport() {
+    return await this.request('/reports/offers-complete');
+  }
+
+  // ===== MÉTODOS DE TESTE E DIAGNÓSTICO =====
+  async testConnection() {
+    try {
+      const response = await fetch(`${this.baseUrl}/`);
+      const data = await response.json();
+      console.log('✅ Teste de conexão bem-sucedido:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Teste de conexão falhou:', error);
+      throw error;
+    }
+  }
+
+  async testReportsEndpoint() {
+    try {
+      const response = await fetch(`${this.baseUrl}/reports/dashboard`);
+      const data = await response.json();
+      console.log('✅ Teste de endpoint de reports bem-sucedido:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Teste de endpoint de reports falhou:', error);
+      throw error;
+    }
+  }
 }
 
 // Classe para gerenciar dados e estado da aplicação
@@ -365,17 +398,6 @@ class DataManager {
       return [];
     }
   }
-
-  // ===== REPORTS API =====
-  async getCourseStatistics() {
-    return await this.request('/reports/course-statistics');
-  }
-
-  async getOffersCompleteReport() {
-    return await this.request('/reports/offers-complete');
-  }
-
-
 
   // Método para recarregar todos os dados
   async refreshAllData() {
