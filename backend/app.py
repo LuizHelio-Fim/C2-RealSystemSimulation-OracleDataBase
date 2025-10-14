@@ -48,6 +48,10 @@ def api_info():
         ]
     }
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # No Content - evita erro 404 no console
+
 # Registrar todas as rotas dos controladores
 app.register_blueprint(student_controller.bp, url_prefix="/api")
 app.register_blueprint(course_controller.bp, url_prefix="/api")
