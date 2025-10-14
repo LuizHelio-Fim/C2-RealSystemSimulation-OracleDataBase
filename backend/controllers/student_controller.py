@@ -88,7 +88,7 @@ def create_student():
                         ELSE 0 
                     END
                 ), 0) + 1 
-                FROM ALUNO 
+                FROM ALUNOS 
                 WHERE ID_CURSO = {id_curso}
             """)
             proximo_numero = cur.fetchone()[0]
@@ -107,7 +107,7 @@ def create_student():
             telefone_part = "NULL" if telefone is None else "'" + str(telefone) + "'"
             
             # CPF e STATUS_CURSO são obrigatórios, não podem ser NULL
-            sql = "INSERT INTO ALUNO (MATRICULA, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO) VALUES (" + str(matricula) + ", '" + str(cpf) + "', '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', " + str(periodo) + ", " + str(id_curso) + ", '" + str(status_curso) + "')"
+            sql = "INSERT INTO ALUNOS (MATRICULA, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO) VALUES (" + str(matricula) + ", '" + str(cpf) + "', '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', " + str(periodo) + ", " + str(id_curso) + ", '" + str(status_curso) + "')"
             
             cur.execute(sql)
             conn.commit()
@@ -144,7 +144,7 @@ def list_students():
     conn = get_connection()
     cur = conn.cursor()
     try:
-        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNO ORDER BY NOME"
+        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNOS ORDER BY NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         students = []
@@ -180,7 +180,7 @@ def get_student_by_id(student_id):
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql)
         row = cur.fetchone()
         
@@ -230,7 +230,7 @@ def update_student(student_id):
 
         try:
             # VULNERÁVEL: Verificar se o estudante existe
-            sql_check = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)
+            sql_check = "SELECT COUNT(1) FROM ALUNOS WHERE MATRICULA = " + str(student_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
                 return jsonify({
@@ -291,7 +291,7 @@ def update_student(student_id):
                     'message': 'Nenhum campo para atualizar foi fornecido'
                 }), 400
 
-            sql = "UPDATE ALUNO SET " + ", ".join(update_parts) + " WHERE MATRICULA = " + str(student_id)
+            sql = "UPDATE ALUNOS SET " + ", ".join(update_parts) + " WHERE MATRICULA = " + str(student_id)
             cur.execute(sql)
             conn.commit()
             
@@ -326,8 +326,8 @@ def delete_student(student_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar se aluno possui matrículas (GRADE_ALUNO.ID_ALUNO referencia ALUNO.MATRICULA)
-        sql_check = "SELECT COUNT(1) FROM GRADE_ALUNO WHERE ID_ALUNO = " + str(student_id)
+        # Verificar se aluno possui matrículas (GRADE_ALUNOS.ID_ALUNO referencia ALUNOS.MATRICULA)
+        sql_check = "SELECT COUNT(1) FROM GRADE_ALUNOS WHERE ID_ALUNO = " + str(student_id)
         cur.execute(sql_check)
         cnt = cur.fetchone()[0]
         if cnt > 0:
@@ -337,7 +337,7 @@ def delete_student(student_id):
             }), 400
         
         # VULNERÁVEL: Check if student exists
-        sql_exists = "SELECT COUNT(1) FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        sql_exists = "SELECT COUNT(1) FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql_exists)
         student_exists = cur.fetchone()[0]
         if student_exists == 0:
@@ -347,7 +347,7 @@ def delete_student(student_id):
             }), 404
         
         # VULNERÁVEL: Delete student
-        sql = "DELETE FROM ALUNO WHERE MATRICULA = " + str(student_id)
+        sql = "DELETE FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql)
         conn.commit()
         

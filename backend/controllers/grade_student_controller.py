@@ -4,13 +4,13 @@ from db.db_conn import get_connection, release_connection
 bp = Blueprint('grade_student', __name__)
 
 def refresh_grade_student_table():
-    """Atualiza completamente a tabela GRADE_ALUNO com todas as matrículas"""
+    """Atualiza completamente a tabela GRADE_ALUNOS com todas as matrículas"""
     conn = get_connection()
     cur = conn.cursor()
     
     try:
         # Limpar a tabela atual (será repovoada)
-        cur.execute("DELETE FROM GRADE_ALUNO")
+        cur.execute("DELETE FROM GRADE_ALUNOS")
         
         # Buscar todos os alunos e todas as ofertas para criar as matrículas
         # Um aluno se matricula em ofertas do seu curso
@@ -27,9 +27,9 @@ def refresh_grade_student_table():
         
         # Para cada combinação aluno-oferta, inserir na tabela
         for student_id, offer_id, student_status in enrollments:
-            # Inserir na tabela GRADE_ALUNO (sem media_final)
+            # Inserir na tabela GRADE_ALUNOS (sem media_final)
             insert_sql = """
-            INSERT INTO GRADE_ALUNO (ID_ALUNO, ID_OFERTA, STATUS) 
+            INSERT INTO GRADE_ALUNOS (ID_ALUNO, ID_OFERTA, STATUS) 
             VALUES (""" + str(student_id) + """, """ + str(offer_id) + """, '""" + str(student_status) + """')
             """
             cur.execute(insert_sql)
@@ -39,7 +39,7 @@ def refresh_grade_student_table():
         
     except Exception as e:
         conn.rollback()
-        print(f"Erro ao atualizar tabela GRADE_ALUNO: {str(e)}")
+        print(f"Erro ao atualizar tabela GRADE_ALUNOS: {str(e)}")
         return False
     finally:
         cur.close()
@@ -47,13 +47,13 @@ def refresh_grade_student_table():
 
 @bp.route('/enrollments/refresh', methods=['POST'])
 def refresh_enrollments():
-    """Endpoint para forçar a atualização da tabela GRADE_ALUNO"""
+    """Endpoint para forçar a atualização da tabela GRADE_ALUNOS"""
     try:
         success = refresh_grade_student_table()
         if success:
-            return jsonify({'message': 'Tabela GRADE_ALUNO atualizada com sucesso'}), 200
+            return jsonify({'message': 'Tabela GRADE_ALUNOS atualizada com sucesso'}), 200
         else:
-            return jsonify({'error': 'Erro ao atualizar tabela GRADE_ALUNO'}), 500
+            return jsonify({'error': 'Erro ao atualizar tabela GRADE_ALUNOS'}), 500
     except Exception as e:
         return jsonify({'error': f'Erro interno do servidor: {str(e)}'}), 500
 
@@ -67,12 +67,12 @@ def list_enrollments():
         SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
-        FROM GRADE_ALUNO ga
-        JOIN ALUNO a ON ga.ID_ALUNO = a.MATRICULA
-        JOIN OFERTA o ON ga.ID_OFERTA = o.ID
-        JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-        JOIN CURSO c ON o.ID_CURSO = c.ID
-        JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+        FROM GRADE_ALUNOS ga
+        JOIN ALUNOS a ON ga.ID_ALUNO = a.MATRICULA
+        JOIN OFERTAS o ON ga.ID_OFERTA = o.ID
+        JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+        JOIN CURSOS c ON o.ID_CURSO = c.ID
+        JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR
         ORDER BY a.NOME, o.ANO DESC, o.SEMESTRE DESC, m.NOME
         """
         cur.execute(sql)
@@ -107,12 +107,12 @@ def get_enrollment(student_id, offer_id):
         SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
-        FROM GRADE_ALUNO ga
-        JOIN ALUNO a ON ga.ID_ALUNO = a.MATRICULA
-        JOIN OFERTA o ON ga.ID_OFERTA = o.ID
-        JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-        JOIN CURSO c ON o.ID_CURSO = c.ID
-        JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+        FROM GRADE_ALUNOS ga
+        JOIN ALUNOS a ON ga.ID_ALUNO = a.MATRICULA
+        JOIN OFERTAS o ON ga.ID_OFERTA = o.ID
+        JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+        JOIN CURSOS c ON o.ID_CURSO = c.ID
+        JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR
         WHERE ga.ID_ALUNO = """ + str(student_id) + """ AND ga.ID_OFERTA = """ + str(offer_id) + """
         """
         cur.execute(sql)
@@ -147,12 +147,12 @@ def get_student_enrollments(student_id):
         SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
-        FROM GRADE_ALUNO ga
-        JOIN ALUNO a ON ga.ID_ALUNO = a.MATRICULA
-        JOIN OFERTA o ON ga.ID_OFERTA = o.ID
-        JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-        JOIN CURSO c ON o.ID_CURSO = c.ID
-        JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+        FROM GRADE_ALUNOS ga
+        JOIN ALUNOS a ON ga.ID_ALUNO = a.MATRICULA
+        JOIN OFERTAS o ON ga.ID_OFERTA = o.ID
+        JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+        JOIN CURSOS c ON o.ID_CURSO = c.ID
+        JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR
         WHERE ga.ID_ALUNO = """ + str(student_id) + """
         ORDER BY o.ANO DESC, o.SEMESTRE DESC, m.NOME
         """
@@ -188,12 +188,12 @@ def get_offer_enrollments(offer_id):
         SELECT ga.ID_ALUNO as MATRICULA, ga.ID_OFERTA, ga.STATUS,
                a.NOME as ALUNO_NOME, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME,
                p.NOME as PROFESSOR_NOME, o.ANO, o.SEMESTRE
-        FROM GRADE_ALUNO ga
-        JOIN ALUNO a ON ga.ID_ALUNO = a.MATRICULA
-        JOIN OFERTA o ON ga.ID_OFERTA = o.ID
-        JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-        JOIN CURSO c ON o.ID_CURSO = c.ID
-        JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+        FROM GRADE_ALUNOS ga
+        JOIN ALUNOS a ON ga.ID_ALUNO = a.MATRICULA
+        JOIN OFERTAS o ON ga.ID_OFERTA = o.ID
+        JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+        JOIN CURSOS c ON o.ID_CURSO = c.ID
+        JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR
         WHERE ga.ID_OFERTA = """ + str(offer_id) + """
         ORDER BY a.NOME
         """

@@ -32,7 +32,7 @@ def create_offer():
 
         try:
             # VULNERÁVEL: Verificar se a matéria existe
-            sql_check_materia = "SELECT COUNT(1) FROM MATERIA WHERE ID_MATERIA = " + str(id_materia) + " AND ID_CURSO = " + str(id_curso)
+            sql_check_materia = "SELECT COUNT(1) FROM MATERIAS WHERE ID_MATERIA = " + str(id_materia) + " AND ID_CURSO = " + str(id_curso)
             cur.execute(sql_check_materia)
             if cur.fetchone()[0] == 0:
                 return jsonify({
@@ -41,7 +41,7 @@ def create_offer():
                 }), 404
 
             # VULNERÁVEL: Verificar se o professor existe
-            sql_check_professor = "SELECT COUNT(1) FROM PROFESSOR WHERE ID_PROFESSOR = " + str(id_professor)
+            sql_check_professor = "SELECT COUNT(1) FROM PROFESSORES WHERE ID_PROFESSOR = " + str(id_professor)
             cur.execute(sql_check_professor)
             if cur.fetchone()[0] == 0:
                 return jsonify({
@@ -51,7 +51,7 @@ def create_offer():
 
             new_id = next_seq_val("OFERTA_ID_SEQ", conn)
             # VULNERÁVEL: Usando concatenação de strings
-            sql = "INSERT INTO OFERTA (ID, ANO, SEMESTRE, ID_MATERIA, ID_CURSO, ID_PROFESSOR) VALUES (" + str(new_id) + ", " + str(ano) + ", " + str(semestre) + ", " + str(id_materia) + ", " + str(id_curso) + ", " + str(id_professor) + ")"
+            sql = "INSERT INTO OFERTAS (ID, ANO, SEMESTRE, ID_MATERIA, ID_CURSO, ID_PROFESSOR) VALUES (" + str(new_id) + ", " + str(ano) + ", " + str(semestre) + ", " + str(id_materia) + ", " + str(id_curso) + ", " + str(id_professor) + ")"
             
             cur.execute(sql)
             conn.commit()
@@ -84,7 +84,7 @@ def list_offers():
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT o.ID, o.ANO, o.SEMESTRE, o.ID_MATERIA, o.ID_CURSO, o.ID_PROFESSOR, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME, p.NOME as PROFESSOR_NOME FROM OFERTA o JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO JOIN CURSO c ON o.ID_CURSO = c.ID JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR ORDER BY o.ANO DESC, o.SEMESTRE DESC, c.NOME, m.NOME"
+        sql = "SELECT o.ID, o.ANO, o.SEMESTRE, o.ID_MATERIA, o.ID_CURSO, o.ID_PROFESSOR, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME, p.NOME as PROFESSOR_NOME FROM OFERTAS o JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO JOIN CURSOS c ON o.ID_CURSO = c.ID JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR ORDER BY o.ANO DESC, o.SEMESTRE DESC, c.NOME, m.NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         offers = []
@@ -120,7 +120,7 @@ def get_offer_by_id(offer_id):
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT o.ID, o.ANO, o.SEMESTRE, o.ID_MATERIA, o.ID_CURSO, o.ID_PROFESSOR, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME, p.NOME as PROFESSOR_NOME FROM OFERTA o JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO JOIN CURSO c ON o.ID_CURSO = c.ID JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR WHERE o.ID = " + str(offer_id)
+        sql = "SELECT o.ID, o.ANO, o.SEMESTRE, o.ID_MATERIA, o.ID_CURSO, o.ID_PROFESSOR, m.NOME as MATERIA_NOME, c.NOME as CURSO_NOME, p.NOME as PROFESSOR_NOME FROM OFERTAS o JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO JOIN CURSOS c ON o.ID_CURSO = c.ID JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR WHERE o.ID = :offer_id"
         cur.execute(sql)
         row = cur.fetchone()
         
@@ -216,7 +216,7 @@ def update_offer(offer_id):
                     'message': 'Nenhum campo para atualizar foi fornecido'
                 }), 400
 
-            sql = "UPDATE OFERTA SET " + ", ".join(update_parts) + " WHERE ID = " + str(offer_id)
+            sql = "UPDATE OFERTAS SET " + ", ".join(update_parts) + " WHERE ID = " + str(offer_id)
             cur.execute(sql)
             conn.commit()
             
@@ -268,7 +268,7 @@ def delete_offer(offer_id):
             }), 404
         
         # VULNERÁVEL: Deletar oferta
-        sql = "DELETE FROM OFERTA WHERE ID = " + str(offer_id)
+        sql = "DELETE FROM OFERTAS WHERE ID = " + str(offer_id)
         cur.execute(sql)
         conn.commit()
         

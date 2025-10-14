@@ -33,7 +33,7 @@ def dashboard_summary():
         
         # Contadores gerais com tratamento de valores NULL
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM CURSO")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM CURSOS")
             total_courses = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de cursos: {total_courses}")
         except Exception as e:
@@ -41,7 +41,7 @@ def dashboard_summary():
             raise Exception(f"Erro ao acessar tabela CURSO: {str(e)}")
         
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM ALUNO")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM ALUNOS")
             total_students = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de alunos: {total_students}")
         except Exception as e:
@@ -49,7 +49,7 @@ def dashboard_summary():
             raise Exception(f"Erro ao acessar tabela ALUNO: {str(e)}")
         
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM PROFESSOR")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM PROFESSORES")
             total_professors = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de professores: {total_professors}")
         except Exception as e:
@@ -57,7 +57,7 @@ def dashboard_summary():
             raise Exception(f"Erro ao acessar tabela PROFESSOR: {str(e)}")
         
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM MATERIA")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM MATERIAS")
             total_subjects = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de matérias: {total_subjects}")
         except Exception as e:
@@ -65,7 +65,7 @@ def dashboard_summary():
             raise Exception(f"Erro ao acessar tabela MATERIA: {str(e)}")
         
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM OFERTA")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM OFERTAS")
             total_offers = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de ofertas: {total_offers}")
         except Exception as e:
@@ -73,7 +73,7 @@ def dashboard_summary():
             raise Exception(f"Erro ao acessar tabela OFERTA: {str(e)}")
         
         try:
-            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM GRADE_ALUNO")
+            cur.execute("SELECT COALESCE(COUNT(*), 0) FROM GRADE_ALUNOS")
             total_enrollments = cur.fetchone()[0]
             print(f"✅ [DASHBOARD] Total de matrículas: {total_enrollments}")
         except Exception as e:
@@ -88,7 +88,7 @@ def dashboard_summary():
                 SELECT 'Aluno' as TIPO, 
                        COALESCE(NOME, 'Nome não informado') as NOME, 
                        COALESCE(TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), 'Data não informada') as DATA
-                FROM ALUNO 
+                FROM ALUNOS 
                 WHERE DATA_NASC IS NOT NULL
                 ORDER BY DATA_NASC DESC 
                 FETCH FIRST 5 ROWS ONLY
@@ -104,7 +104,7 @@ def dashboard_summary():
                 SELECT 'Professor' as TIPO, 
                        COALESCE(NOME, 'Nome não informado') as NOME, 
                        COALESCE(TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), 'Data não informada') as DATA
-                FROM PROFESSOR 
+                FROM PROFESSORES 
                 WHERE DATA_NASC IS NOT NULL
                 ORDER BY DATA_NASC DESC 
                 FETCH FIRST 5 ROWS ONLY
@@ -197,11 +197,11 @@ def course_statistics():
                 COALESCE(COUNT(DISTINCT o.ID), 0) as TOTAL_OFERTAS,
                 COALESCE(COUNT(DISTINCT ga.ID_ALUNO), 0) as TOTAL_MATRICULAS_ATIVAS,
                 COALESCE(COUNT(DISTINCT CASE WHEN o.ANO = EXTRACT(YEAR FROM SYSDATE) THEN o.ID END), 0) as OFERTAS_ANO_ATUAL
-            FROM CURSO c
-            LEFT JOIN ALUNO a ON c.ID = a.ID_CURSO
-            LEFT JOIN MATERIA m ON c.ID = m.ID_CURSO  
-            LEFT JOIN OFERTA o ON c.ID = o.ID_CURSO
-            LEFT JOIN GRADE_ALUNO ga ON o.ID = ga.ID_OFERTA
+            FROM CURSOS c
+            LEFT JOIN ALUNOS a ON c.ID = a.ID_CURSO
+            LEFT JOIN MATERIAS m ON c.ID = m.ID_CURSO  
+            LEFT JOIN OFERTAS o ON c.ID = o.ID_CURSO
+            LEFT JOIN GRADE_ALUNOS ga ON o.ID = ga.ID_OFERTA
             GROUP BY c.ID, c.NOME, c.CARGA_HORARIA_TOTAL
             ORDER BY TOTAL_ALUNOS DESC, TOTAL_OFERTAS DESC
         """)
@@ -342,11 +342,11 @@ def offers_complete_report():
                 COALESCE(p.STATUS, 'Status não informado') as PROFESSOR_STATUS,
                 COALESCE(COUNT(ga.ID_ALUNO), 0) as TOTAL_MATRICULADOS,
                 COALESCE(c.CARGA_HORARIA_TOTAL, 0) as CARGA_TOTAL_CURSO
-            FROM OFERTA o
-            INNER JOIN CURSO c ON o.ID_CURSO = c.ID
-            INNER JOIN MATERIA m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
-            INNER JOIN PROFESSOR p ON o.ID_PROFESSOR = p.ID_PROFESSOR
-            LEFT JOIN GRADE_ALUNO ga ON o.ID = ga.ID_OFERTA
+            FROM OFERTAS o
+            INNER JOIN CURSOS c ON o.ID_CURSO = c.ID
+            INNER JOIN MATERIAS m ON o.ID_MATERIA = m.ID_MATERIA AND o.ID_CURSO = m.ID_CURSO
+            INNER JOIN PROFESSORES p ON o.ID_PROFESSOR = p.ID_PROFESSOR
+            LEFT JOIN GRADE_ALUNOS ga ON o.ID = ga.ID_OFERTA
             GROUP BY o.ID, o.ANO, o.SEMESTRE, c.NOME, m.NOME, m.PERIODO, 
                      m.CARGA_HORARIA, p.NOME, p.EMAIL, p.STATUS, c.CARGA_HORARIA_TOTAL
             ORDER BY COALESCE(o.ANO, 0) DESC, COALESCE(o.SEMESTRE, 0) DESC, 

@@ -30,7 +30,7 @@ def create_course():
         try:
             new_id = next_seq_val("CURSO_ID_SEQ", conn)
             # VULNERÁVEL: Usando concatenação de strings
-            sql = "INSERT INTO CURSO (ID, NOME, CARGA_HORARIA_TOTAL) VALUES (" + str(new_id) + ", '" + str(nome) + "', " + str(carga_horaria_total) + ")"
+            sql = "INSERT INTO CURSOS (ID, NOME, CARGA_HORARIA_TOTAL) VALUES (" + str(new_id) + ", '" + str(nome) + "', " + str(carga_horaria_total) + ")"
             cur.execute(sql)
             conn.commit()
             
@@ -61,7 +61,7 @@ def list_courses():
     conn = get_connection()
     cur = conn.cursor()
     try:
-        sql = "SELECT ID, NOME, CARGA_HORARIA_TOTAL FROM CURSO ORDER BY NOME"
+        sql = "SELECT ID, NOME, CARGA_HORARIA_TOTAL FROM CURSOS ORDER BY NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         courses = []
@@ -91,7 +91,7 @@ def get_course_by_id(course_id):
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT ID, NOME, CARGA_HORARIA_TOTAL FROM CURSO WHERE ID = " + str(course_id)
+        sql = "SELECT ID, NOME, CARGA_HORARIA_TOTAL FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql)
         row = cur.fetchone()
         
@@ -135,7 +135,7 @@ def update_course(course_id):
 
         try:
             # VULNERÁVEL: Verificar se o curso existe
-            sql_check = "SELECT COUNT(1) FROM CURSO WHERE ID = " + str(course_id)
+            sql_check = "SELECT COUNT(1) FROM CURSOS WHERE ID = " + str(course_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
                 return jsonify({
@@ -179,7 +179,7 @@ def update_course(course_id):
                     'message': 'Nenhum campo válido para atualizar foi fornecido'
                 }), 400
 
-            sql = "UPDATE CURSO SET " + ", ".join(update_parts) + " WHERE ID = " + str(course_id)
+            sql = "UPDATE CURSOS SET " + ", ".join(update_parts) + " WHERE ID = " + str(course_id)
             print(f"SQL gerado: {sql}")  # Debug
             cur.execute(sql)
             conn.commit()
@@ -231,7 +231,7 @@ def delete_course(course_id):
             }), 400
         
         # Verificar se o curso existe
-        sql_check_exists = "SELECT COUNT(1) FROM CURSO WHERE ID = " + str(course_id)
+        sql_check_exists = "SELECT COUNT(1) FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql_check_exists)
         course_exists = cur.fetchone()[0]
         if course_exists == 0:
@@ -241,7 +241,7 @@ def delete_course(course_id):
             }), 404
         
         # Deletar curso
-        sql = "DELETE FROM CURSO WHERE ID = " + str(course_id)
+        sql = "DELETE FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql)
         conn.commit()
         

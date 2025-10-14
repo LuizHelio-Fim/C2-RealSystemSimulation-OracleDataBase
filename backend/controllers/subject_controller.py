@@ -45,7 +45,7 @@ def create_subject():
         
         if not id_materia:
             # Gerar próximo ID automaticamente
-            cur.execute("SELECT NVL(MAX(ID_MATERIA), 0) + 1 FROM MATERIA WHERE ID_CURSO = " + str(id_curso))
+            cur.execute("SELECT NVL(MAX(ID_MATERIA), 0) + 1 FROM MATERIAS WHERE ID_CURSO = " + str(id_curso))
             id_materia = cur.fetchone()[0]
 
         try:
@@ -59,7 +59,7 @@ def create_subject():
                 }), 404
 
             # VULNERÁVEL: Usando concatenação de strings
-            sql = "INSERT INTO MATERIA (ID_MATERIA, ID_CURSO, PERIODO, NOME, CARGA_HORARIA) VALUES (" + str(id_materia) + ", " + str(id_curso) + ", " + str(periodo) + ", '" + str(nome) + "', " + str(carga_horaria) + ")"
+            sql = "INSERT INTO MATERIAS (ID_MATERIA, ID_CURSO, PERIODO, NOME, CARGA_HORARIA) VALUES (" + str(id_materia) + ", " + str(id_curso) + ", " + str(periodo) + ", '" + str(nome) + "', " + str(carga_horaria) + ")"
             cur.execute(sql)
             conn.commit()
             
@@ -91,7 +91,7 @@ def list_subjects():
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME FROM MATERIA m JOIN CURSO c ON m.ID_CURSO = c.ID ORDER BY c.NOME, m.PERIODO, m.NOME"
+        sql = "SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME FROM MATERIAS m JOIN CURSOS c ON m.ID_CURSO = c.ID ORDER BY c.NOME, m.PERIODO, m.NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         subjects = []
@@ -125,8 +125,8 @@ def get_subject_by_id(subject_id, course_id):
     try:
         sql = """
         SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME
-        FROM MATERIA m
-        JOIN CURSO c ON m.ID_CURSO = c.ID
+        FROM MATERIAS m
+        JOIN CURSOS c ON m.ID_CURSO = c.ID
         WHERE m.ID_MATERIA = """ + str(subject_id) + """ AND m.ID_CURSO = """ + str(course_id) + """
         """
         cur.execute(sql)
@@ -166,8 +166,8 @@ def update_subject(subject_id, course_id):
 
         try:
             # Verificar se a matéria existe
-            cur.execute("SELECT COUNT(1) FROM MATERIA WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso", 
-                       {'id_materia': subject_id, 'id_curso': course_id})
+            cur.execute("SELECT COUNT(1) FROM MATERIAS WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso", 
+                        {'id_materia': subject_id, 'id_curso': course_id})
             if cur.fetchone()[0] == 0:
                 return jsonify({'error': 'Matéria não encontrada'}), 404
 
@@ -215,7 +215,7 @@ def update_subject(subject_id, course_id):
             if not update_fields:
                 return jsonify({'error': 'Nenhum campo para atualizar foi fornecido'}), 400
 
-            sql = f"UPDATE MATERIA SET {', '.join(update_fields)} WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso"
+            sql = f"UPDATE MATERIAS SET {', '.join(update_fields)} WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso"
             cur.execute(sql, params)
             conn.commit()
             
@@ -251,7 +251,7 @@ def delete_subject(subject_id, course_id):
             return jsonify({'error': 'Matéria não encontrada'}), 404
         
         # VULNERÁVEL: Deletar matéria
-        sql = "DELETE FROM MATERIA WHERE ID_MATERIA = " + str(subject_id) + " AND ID_CURSO = " + str(course_id)
+        sql = "DELETE FROM MATERIAS WHERE ID_MATERIA = " + str(subject_id) + " AND ID_CURSO = " + str(course_id)
         cur.execute(sql)
         conn.commit()
         return jsonify({'message': 'Matéria deletada com sucesso'}), 200

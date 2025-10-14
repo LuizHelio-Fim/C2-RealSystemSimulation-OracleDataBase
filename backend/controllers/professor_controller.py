@@ -60,7 +60,7 @@ def create_professor():
             data_part = "NULL" if formatted_date is None else "TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')"
             telefone_part = "NULL" if telefone is None else "'" + str(telefone) + "'"
             
-            sql = "INSERT INTO PROFESSOR (ID_PROFESSOR, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, STATUS) VALUES (" + str(new_id) + ", '" + str(cpf) + "', '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', '" + str(status) + "')"
+            sql = "INSERT INTO PROFESSORES (ID_PROFESSOR, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, STATUS) VALUES (" + str(new_id) + ", '" + str(cpf) + "', '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', '" + str(status) + "')"
             
             cur.execute(sql)
             conn.commit()
@@ -98,7 +98,7 @@ def list_professors():
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSOR ORDER BY NOME"
+        sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSORES ORDER BY NOME"
         cur.execute(sql)
         rows = cur.fetchall()
         professors = []
@@ -132,7 +132,7 @@ def get_professor_by_id(professor_id):
     cur = conn.cursor()
     try:
         # VULNERÁVEL: Usando concatenação de strings
-        sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSOR WHERE ID_PROFESSOR = " + str(professor_id)
+        sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql)
         row = cur.fetchone()
         
@@ -180,7 +180,7 @@ def update_professor(professor_id):
 
         try:
             # VULNERÁVEL: Verificar se o professor existe
-            sql_check = "SELECT COUNT(1) FROM PROFESSOR WHERE ID_PROFESSOR = " + str(professor_id)
+            sql_check = "SELECT COUNT(1) FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
                 return jsonify({
@@ -237,7 +237,7 @@ def update_professor(professor_id):
                     'message': 'Nenhum campo para atualizar foi fornecido'
                 }), 400
 
-            sql = "UPDATE PROFESSOR SET " + ", ".join(update_parts) + " WHERE ID_PROFESSOR = " + str(professor_id)
+            sql = "UPDATE PROFESSORES SET " + ", ".join(update_parts) + " WHERE ID_PROFESSOR = " + str(professor_id)
             cur.execute(sql)
             conn.commit()
             
@@ -273,7 +273,7 @@ def delete_professor(professor_id):
     cur = conn.cursor()
     try:
         # Verificar se professor possui ofertas (OFERTA.ID_PROFESSOR referencia PROFESSOR.ID_PROFESSOR)
-        sql_check_offers = "SELECT COUNT(1) FROM OFERTA WHERE ID_PROFESSOR = " + str(professor_id)
+        sql_check_offers = "SELECT COUNT(1) FROM OFERTAS WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql_check_offers)
         offer_count = cur.fetchone()[0]
         if offer_count > 0:
@@ -283,7 +283,7 @@ def delete_professor(professor_id):
             }), 400
         
         # Verificar se o professor existe
-        sql_exists = "SELECT COUNT(1) FROM PROFESSOR WHERE ID_PROFESSOR = " + str(professor_id)
+        sql_exists = "SELECT COUNT(1) FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql_exists)
         professor_exists = cur.fetchone()[0]
         if professor_exists == 0:
@@ -293,7 +293,7 @@ def delete_professor(professor_id):
             }), 404
         
         # VULNERÁVEL: Deletar professor
-        sql = "DELETE FROM PROFESSOR WHERE ID_PROFESSOR = " + str(professor_id)
+        sql = "DELETE FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql)
         conn.commit()
         
