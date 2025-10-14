@@ -45,8 +45,6 @@ async function loadCourseStatisticsReport() {
     const targetContainer = courseStatsContent || reportContent;
     targetContainer.innerHTML = `
       <div class="report-section">
-        <h2>📊 Estatísticas por Curso</h2>
-        
         <!-- Resumo Geral -->
         <div class="dashboard-grid" style="margin-bottom: 2rem;">
           <div class="stat-card">
@@ -209,8 +207,6 @@ async function loadOffersCompleteReport() {
     const targetContainer = offersCompleteContent || reportContent;
     targetContainer.innerHTML = `
       <div class="report-section">
-        <h2>📋 Relatório Completo de Ofertas</h2>
-        
         <!-- Resumo Geral -->
         <div class="dashboard-grid" style="margin-bottom: 2rem;">
           <div class="stat-card">
