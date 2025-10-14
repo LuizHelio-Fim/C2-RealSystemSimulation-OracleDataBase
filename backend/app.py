@@ -29,6 +29,25 @@ def home():
         }
     }
 
+@app.route("/api/")
+def api_info():
+    return {
+        "msg": "SGE API - Sistema de Gestão de Estudantes",
+        "version": "1.0.0",
+        "status": "online",
+        "available_endpoints": [
+            "/api/students",
+            "/api/courses", 
+            "/api/professors",
+            "/api/subjects",
+            "/api/offers",
+            "/api/enrollments",
+            "/api/reports/dashboard",
+            "/api/reports/course-statistics",
+            "/api/reports/offers-complete"
+        ]
+    }
+
 # Registrar todas as rotas dos controladores
 app.register_blueprint(student_controller.bp, url_prefix="/api")
 app.register_blueprint(course_controller.bp, url_prefix="/api")

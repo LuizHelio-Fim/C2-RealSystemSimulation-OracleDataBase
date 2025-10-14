@@ -263,7 +263,9 @@ class ApiService {
   // ===== MÉTODOS DE TESTE E DIAGNÓSTICO =====
   async testConnection() {
     try {
-      const response = await fetch(`${this.baseUrl}/`);
+      // Usar endpoint raiz (sem /api) para teste de conexão
+      const rootUrl = this.baseUrl.replace('/api', '');
+      const response = await fetch(`${rootUrl}/`);
       const data = await response.json();
       console.log('✅ Teste de conexão bem-sucedido:', data);
       return data;
@@ -292,7 +294,9 @@ class ApiService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
       
-      const response = await fetch(`${this.baseUrl}/`, {
+      // Tentar endpoint raiz primeiro (sem /api)
+      const rootUrl = this.baseUrl.replace('/api', '');
+      const response = await fetch(`${rootUrl}/`, {
         signal: controller.signal,
         method: 'GET'
       });
