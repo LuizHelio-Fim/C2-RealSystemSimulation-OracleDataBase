@@ -9,12 +9,10 @@ def format_date_for_oracle(dt_str):
     if not dt_str or dt_str.strip() == '':
         return None
     try:
-        # Try YYYY-MM-DD format first
         datetime.strptime(dt_str, '%Y-%m-%d')
         return dt_str
     except ValueError:
         try:
-            # Try DD/MM/YYYY format
             dt = datetime.strptime(dt_str, '%d/%m/%Y')
             return dt.strftime('%Y-%m-%d')
         except ValueError:
@@ -31,7 +29,6 @@ def create_student():
                 'message': 'Dados JSON são obrigatórios'
             }), 400
         
-        # Validar campos obrigatórios (matrícula será gerada automaticamente)
         nome = data.get('nome')
         cpf = data.get('cpf')
         email = data.get('email')
@@ -39,10 +36,8 @@ def create_student():
         id_curso = data.get('id_curso')  
         status_curso = data.get('status_curso')
         
-        # Debug: log dos dados recebidos
-        print(f"Dados recebidos: {data}")
+        print(f"Dados recebidos: {data}") # Debug
         
-        # Validação dos campos obrigatórios (exceto matrícula que será gerada)
         missing_fields = []
         if not nome or nome.strip() == '':
             missing_fields.append('nome')
@@ -66,20 +61,15 @@ def create_student():
         conn = get_connection()
         cur = conn.cursor()
 
-        # Campos opcionais
         data_nasc = data.get("data_nasc")
         telefone = data.get("telefone")
 
         try:
-            # Gerar matrícula automaticamente: YYYYCCNN 
-            # YYYY = Ano atual, CC = ID do curso (2 dígitos), NN = contador sequencial
             from datetime import datetime
             ano_atual = datetime.now().year
             
-            # Formatar ID do curso com 2 dígitos (ex: 1 -> 01, 10 -> 10)
             curso_formatted = str(id_curso).zfill(2)
             
-            # Buscar o próximo número sequencial para este curso neste ano
             cur.execute(f"""
                 SELECT NVL(MAX(
                     CASE 
@@ -93,20 +83,16 @@ def create_student():
             """)
             proximo_numero = cur.fetchone()[0]
             
-            # Formatar número sequencial com 2 dígitos (ex: 1 -> 01)
             numero_formatted = str(proximo_numero).zfill(2)
             
-            # Gerar matrícula final: YYYYCCNN
             matricula = f"{ano_atual}{curso_formatted}{numero_formatted}"
             print(f"Matrícula gerada: {matricula}")
             
-            # Formatar data se fornecida
             formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
             
             data_part = "NULL" if formatted_date is None else "TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')"
             telefone_part = "NULL" if telefone is None else "'" + str(telefone) + "'"
             
-            # CPF e STATUS_CURSO são obrigatórios, não podem ser NULL
             sql = "INSERT INTO ALUNOS (MATRICULA, CPF, NOME, DATA_NASC, TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO) VALUES (" + str(matricula) + ", '" + str(cpf) + "', '" + str(nome) + "', " + data_part + ", " + telefone_part + ", '" + str(email) + "', " + str(periodo) + ", " + str(id_curso) + ", '" + str(status_curso) + "')"
             
             cur.execute(sql)
@@ -179,7 +165,6 @@ def get_student_by_id(student_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Usando concatenação de strings
         sql = "SELECT MATRICULA, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, PERIODO, ID_CURSO, STATUS_CURSO FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql)
         row = cur.fetchone()
@@ -229,7 +214,6 @@ def update_student(student_id):
         cur = conn.cursor()
 
         try:
-            # VULNERÁVEL: Verificar se o estudante existe
             sql_check = "SELECT COUNT(1) FROM ALUNOS WHERE MATRICULA = " + str(student_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
@@ -238,7 +222,6 @@ def update_student(student_id):
                     'message': 'Estudante não encontrado'
                 }), 404
 
-            # VULNERÁVEL: Construir query de atualização dinamicamente
             update_parts = []
             
             if 'matricula' in data:
@@ -251,7 +234,6 @@ def update_student(student_id):
                 cpf_val = "NULL" if data['cpf'] is None else "'" + str(data['cpf']) + "'"
                 update_parts.append("CPF = " + cpf_val)
                 
-            # Aceitar ambos os formatos de data
             data_nasc = data.get('data_nasc') or data.get('data_nascimento')
             if data_nasc is not None:
                 try:
@@ -276,7 +258,6 @@ def update_student(student_id):
             if 'periodo' in data:
                 update_parts.append("PERIODO = " + str(data['periodo']))
                 
-            # Aceitar ambos os formatos
             id_curso = data.get('id_curso') or data.get('course_id')
             if id_curso is not None:
                 update_parts.append("ID_CURSO = " + str(id_curso))
@@ -326,7 +307,6 @@ def delete_student(student_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar se aluno possui matrículas (GRADE_ALUNOS.ID_ALUNO referencia ALUNOS.MATRICULA)
         sql_check = "SELECT COUNT(1) FROM GRADE_ALUNOS WHERE ID_ALUNO = " + str(student_id)
         cur.execute(sql_check)
         cnt = cur.fetchone()[0]
@@ -336,7 +316,6 @@ def delete_student(student_id):
                 'message': 'Aluno possui matrículas e não pode ser excluído. Remova-as antes.'
             }), 400
         
-        # VULNERÁVEL: Check if student exists
         sql_exists = "SELECT COUNT(1) FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql_exists)
         student_exists = cur.fetchone()[0]
@@ -346,7 +325,6 @@ def delete_student(student_id):
                 'message': 'Estudante não encontrado'
             }), 404
         
-        # VULNERÁVEL: Delete student
         sql = "DELETE FROM ALUNOS WHERE MATRICULA = " + str(student_id)
         cur.execute(sql)
         conn.commit()

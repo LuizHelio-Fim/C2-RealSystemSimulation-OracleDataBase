@@ -9,12 +9,10 @@ def format_date_for_oracle(dt_str):
     if not dt_str or dt_str.strip() == '':
         return None
     try:
-        # Try YYYY-MM-DD format first
         datetime.strptime(dt_str, '%Y-%m-%d')
         return dt_str
     except ValueError:
         try:
-            # Try DD/MM/YYYY format
             dt = datetime.strptime(dt_str, '%d/%m/%Y')
             return dt.strftime('%Y-%m-%d')
         except ValueError:
@@ -30,13 +28,11 @@ def create_professor():
                 'message': 'Dados JSON são obrigatórios'
             }), 400
         
-        # Validar campos obrigatórios conforme schema do banco (NOT NULL)
         cpf = data.get('cpf')
         nome = data.get('nome')
         email = data.get('email')
         status = data.get('status')
         
-        # Campos obrigatórios no banco PROFESSOR (CPF, NOME, EMAIL, STATUS são NOT NULL)
         if not all([cpf, nome, email, status]):
             return jsonify({
                 'success': False,
@@ -46,17 +42,14 @@ def create_professor():
         conn = get_connection()
         cur = conn.cursor()
 
-        # Campos opcionais
         data_nasc = data.get("data_nasc")
         telefone = data.get("telefone")
 
         try:
-            # Formatar data se fornecida
             formatted_date = format_date_for_oracle(data_nasc) if data_nasc else None
             
             new_id = next_seq_val("PROFESSOR_ID_PROFESSOR_SEQ", conn)
             
-            # VULNERÁVEL: Usando concatenação de strings
             data_part = "NULL" if formatted_date is None else "TO_DATE('" + str(formatted_date) + "','YYYY-MM-DD')"
             telefone_part = "NULL" if telefone is None else "'" + str(telefone) + "'"
             
@@ -97,7 +90,6 @@ def list_professors():
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Usando concatenação de strings
         sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSORES ORDER BY NOME"
         cur.execute(sql)
         rows = cur.fetchall()
@@ -131,7 +123,6 @@ def get_professor_by_id(professor_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Usando concatenação de strings
         sql = "SELECT ID_PROFESSOR, CPF, NOME, TO_CHAR(DATA_NASC, 'YYYY-MM-DD'), TELEFONE, EMAIL, STATUS FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql)
         row = cur.fetchone()
@@ -179,7 +170,6 @@ def update_professor(professor_id):
         cur = conn.cursor()
 
         try:
-            # VULNERÁVEL: Verificar se o professor existe
             sql_check = "SELECT COUNT(1) FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
@@ -188,7 +178,6 @@ def update_professor(professor_id):
                     'message': 'Professor não encontrado'
                 }), 404
 
-            # VULNERÁVEL: Construir query de atualização dinamicamente
             update_parts = []
             
             if 'cpf' in data:
@@ -213,7 +202,6 @@ def update_professor(professor_id):
                 update_parts.append("EMAIL = '" + str(data['email']) + "'")
                 
             if 'status' in data:
-                # STATUS é NOT NULL no banco, então deve ser fornecido e não pode ser vazio
                 status_value = data['status']
                 if status_value is None:
                     return jsonify({
@@ -221,7 +209,6 @@ def update_professor(professor_id):
                         'message': 'Campo status é obrigatório e não pode ser nulo'
                     }), 400
                 
-                # Converter para string e verificar se não está vazio
                 status_str = str(status_value).strip()
                 if not status_str:
                     return jsonify({
@@ -272,7 +259,6 @@ def delete_professor(professor_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar se professor possui ofertas (OFERTA.ID_PROFESSOR referencia PROFESSOR.ID_PROFESSOR)
         sql_check_offers = "SELECT COUNT(1) FROM OFERTAS WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql_check_offers)
         offer_count = cur.fetchone()[0]
@@ -282,7 +268,6 @@ def delete_professor(professor_id):
                 'message': 'Professor possui ofertas cadastradas e não pode ser excluído. Remova-as antes.'
             }), 400
         
-        # Verificar se o professor existe
         sql_exists = "SELECT COUNT(1) FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql_exists)
         professor_exists = cur.fetchone()[0]
@@ -292,7 +277,6 @@ def delete_professor(professor_id):
                 'message': 'Professor não encontrado'
             }), 404
         
-        # VULNERÁVEL: Deletar professor
         sql = "DELETE FROM PROFESSORES WHERE ID_PROFESSOR = " + str(professor_id)
         cur.execute(sql)
         conn.commit()

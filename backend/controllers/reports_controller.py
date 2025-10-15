@@ -15,7 +15,6 @@ def dashboard_summary():
     try:
         print("🔄 [DASHBOARD] Iniciando geração de relatório do dashboard...")
         
-        # Testar conexão com banco
         conn = get_connection()
         if not conn:
             raise Exception("Falha ao estabelecer conexão com o banco de dados")
@@ -31,7 +30,6 @@ def dashboard_summary():
     try:
         print("📊 [DASHBOARD] Coletando contadores gerais...")
         
-        # Contadores gerais com tratamento de valores NULL
         try:
             cur.execute("SELECT COALESCE(COUNT(*), 0) FROM CURSOS")
             total_courses = cur.fetchone()[0]
@@ -82,7 +80,6 @@ def dashboard_summary():
         
         print("📅 [DASHBOARD] Coletando atividades recentes...")
         
-        # Últimas atividades (baseado em data de nascimento como proxy) com tratamento NULL
         try:
             cur.execute("""
                 SELECT 'Aluno' as TIPO, 
@@ -140,7 +137,6 @@ def dashboard_summary():
         
         print(f"❌ [DASHBOARD] {error_msg}")
         
-        # Log detalhado do erro
         import traceback
         print(f"📋 [DASHBOARD] Stack trace completo:\n{traceback.format_exc()}")
         
@@ -169,7 +165,6 @@ def course_statistics():
     try:
         print("🔄 [COURSE_STATS] Iniciando geração de estatísticas por curso...")
         
-        # Testar conexão com banco
         conn = get_connection()
         if not conn:
             raise Exception("Falha ao estabelecer conexão com o banco de dados")
@@ -185,7 +180,6 @@ def course_statistics():
     try:
         print("📊 [COURSE_STATS] Executando consulta principal...")
         
-        # Consulta melhorada com COALESCE para tratar NULLs
         cur.execute("""
             SELECT 
                 COALESCE(c.ID, 0) as CURSO_ID,
@@ -223,7 +217,6 @@ def course_statistics():
                 'mensagem': 'Nenhum curso cadastrado no sistema'
             }), 200
         
-        # Calcular totais gerais com tratamento de valores None
         try:
             total_students = sum(course[3] or 0 for course in courses)
             total_subjects = sum(course[4] or 0 for course in courses)
@@ -250,11 +243,9 @@ def course_statistics():
         
         for i, course in enumerate(courses):
             try:
-                # Calcular percentuais com proteção contra divisão por zero
                 perc_alunos = (course[3] / total_students * 100) if total_students > 0 else 0
                 perc_ofertas = (course[6] / total_offers * 100) if total_offers > 0 else 0
                 
-                # Calcular média com proteção contra divisão por zero
                 media_alunos_por_oferta = round(course[7] / course[6], 2) if course[6] and course[6] > 0 else 0
                 
                 course_stats = {
@@ -276,7 +267,6 @@ def course_statistics():
                 
             except Exception as e:
                 print(f"⚠️ [COURSE_STATS] Erro ao processar curso {i+1}: {e}")
-                # Continua processamento dos outros cursos
                 continue
         
         print(f"✅ [COURSE_STATS] Relatório gerado com {len(report['estatisticas_por_curso'])} cursos")
@@ -288,7 +278,6 @@ def course_statistics():
         
         print(f"❌ [COURSE_STATS] {error_msg}")
         
-        # Log detalhado do erro
         import traceback
         print(f"📋 [COURSE_STATS] Stack trace completo:\n{traceback.format_exc()}")
         
@@ -317,7 +306,6 @@ def offers_complete_report():
     try:
         print("🔄 [OFFERS_REPORT] Iniciando geração de relatório de ofertas...")
         
-        # Estabelecer conexão com banco
         conn = get_connection()
         if not conn:
             raise Exception("Falha ao estabelecer conexão com o banco de dados")
@@ -327,7 +315,6 @@ def offers_complete_report():
         
         print("📊 [OFFERS_REPORT] Executando consulta principal...")
         
-        # Consulta melhorada com COALESCE para tratar NULLs
         cur.execute("""
             SELECT 
                 COALESCE(o.ID, 0) as OFERTA_ID,
@@ -370,11 +357,9 @@ def offers_complete_report():
                 'mensagem': 'Nenhuma oferta cadastrada no sistema'
             }), 200
         
-        # Estatísticas gerais com tratamento de valores None
         total_offers = len(offers)
         total_students = sum(offer[10] or 0 for offer in offers)
         
-        # Usar set para contar únicos, tratando valores None
         professor_names = {offer[7] for offer in offers if offer[7] and offer[7] != 'Professor não informado'}
         course_names = {offer[3] for offer in offers if offer[3] and offer[3] != 'Curso não informado'}
         
@@ -396,11 +381,9 @@ def offers_complete_report():
         
         print("🔄 [OFFERS_REPORT] Processando detalhes das ofertas...")
         
-        # Lista completa para tabela detalhada com tratamento de erros
         processed_offers = 0
         for i, offer in enumerate(offers):
             try:
-                # Usar campos diretos da consulta
                 total_matriculados = offer[10] or 0
                 carga_total_curso = offer[11] or 0
                 
@@ -423,7 +406,6 @@ def offers_complete_report():
                 
             except Exception as e:
                 print(f"⚠️ [OFFERS_REPORT] Erro ao processar oferta {i+1}: {e}")
-                # Continua processamento das outras ofertas
                 continue
         
         print(f"✅ [OFFERS_REPORT] Relatório gerado com {processed_offers} ofertas processadas")
@@ -435,7 +417,6 @@ def offers_complete_report():
         
         print(f"❌ [OFFERS_REPORT] {error_msg}")
         
-        # Log detalhado do erro
         import traceback
         print(f"📋 [OFFERS_REPORT] Stack trace completo:\n{traceback.format_exc()}")
         

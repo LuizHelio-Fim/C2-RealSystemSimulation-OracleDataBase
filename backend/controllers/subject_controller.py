@@ -13,13 +13,11 @@ def create_subject():
                 'message': 'Dados JSON são obrigatórios'
             }), 400
         
-        # Validar campos obrigatórios conforme schema do banco (todos são NOT NULL)
         id_curso = data.get('id_curso')
         periodo = data.get('periodo')
         nome = data.get('nome')
         carga_horaria = data.get('carga_horaria')
         
-        # Validação específica dos campos obrigatórios
         missing_fields = []
         if not id_curso or id_curso == '':
             missing_fields.append('id_curso')
@@ -36,7 +34,6 @@ def create_subject():
                 'message': f'Campos obrigatórios ausentes: {", ".join(missing_fields)}'
             }), 400
 
-        # Gerar ID_MATERIA automaticamente se não fornecido
         id_materia = data.get('id_materia')
         
         conn = get_connection()
@@ -44,12 +41,10 @@ def create_subject():
         cur = conn.cursor()
         
         if not id_materia:
-            # Gerar próximo ID automaticamente
             cur.execute("SELECT NVL(MAX(ID_MATERIA), 0) + 1 FROM MATERIAS WHERE ID_CURSO = " + str(id_curso))
             id_materia = cur.fetchone()[0]
 
         try:
-            # VULNERÁVEL: Verificar se o curso existe
             sql_check = "SELECT COUNT(1) FROM CURSO WHERE ID = " + str(id_curso)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
@@ -58,7 +53,6 @@ def create_subject():
                     'message': 'Curso não encontrado'
                 }), 404
 
-            # VULNERÁVEL: Usando concatenação de strings
             sql = "INSERT INTO MATERIAS (ID_MATERIA, ID_CURSO, PERIODO, NOME, CARGA_HORARIA) VALUES (" + str(id_materia) + ", " + str(id_curso) + ", " + str(periodo) + ", '" + str(nome) + "', " + str(carga_horaria) + ")"
             cur.execute(sql)
             conn.commit()
@@ -90,7 +84,6 @@ def list_subjects():
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Usando concatenação de strings
         sql = "SELECT m.ID_MATERIA, m.ID_CURSO, m.PERIODO, m.NOME, m.CARGA_HORARIA, c.NOME as CURSO_NOME FROM MATERIAS m JOIN CURSOS c ON m.ID_CURSO = c.ID ORDER BY c.NOME, m.PERIODO, m.NOME"
         cur.execute(sql)
         rows = cur.fetchall()
@@ -165,13 +158,11 @@ def update_subject(subject_id, course_id):
         cur = conn.cursor()
 
         try:
-            # Verificar se a matéria existe
             cur.execute("SELECT COUNT(1) FROM MATERIAS WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso", 
                         {'id_materia': subject_id, 'id_curso': course_id})
             if cur.fetchone()[0] == 0:
                 return jsonify({'error': 'Matéria não encontrada'}), 404
 
-            # Construir query de atualização dinamicamente
             update_fields = []
             params = {'id_materia': subject_id, 'id_curso': course_id}
             
@@ -179,7 +170,6 @@ def update_subject(subject_id, course_id):
             
             if 'periodo' in data:
                 try:
-                    # Garantir que periodo seja um número inteiro
                     periodo_value = int(data['periodo']) if data['periodo'] else None
                     update_fields.append("PERIODO = :periodo")
                     params['periodo'] = periodo_value
@@ -194,7 +184,6 @@ def update_subject(subject_id, course_id):
                 
             if 'carga_horaria' in data:
                 try:
-                    # Garantir que carga_horaria seja um número inteiro
                     carga_value = int(data['carga_horaria']) if data['carga_horaria'] else None
                     update_fields.append("CARGA_HORARIA = :carga_horaria")
                     params['carga_horaria'] = carga_value
@@ -204,7 +193,6 @@ def update_subject(subject_id, course_id):
             
             if 'id_curso' in data:
                 try:
-                    # Garantir que id_curso seja um número inteiro
                     id_curso_value = int(data['id_curso']) if data['id_curso'] else None
                     update_fields.append("ID_CURSO = :new_id_curso")
                     params['new_id_curso'] = id_curso_value
@@ -236,21 +224,18 @@ def delete_subject(subject_id, course_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar se a matéria tem ofertas
         cur.execute("SELECT COUNT(1) FROM OFERTA WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso", 
                    {'id_materia': subject_id, 'id_curso': course_id})
         offer_count = cur.fetchone()[0]
         if offer_count > 0:
             return jsonify({'error': 'Não é possível excluir matéria com ofertas cadastradas'}), 400
         
-        # Verificar se a matéria existe
         cur.execute("SELECT COUNT(1) FROM MATERIA WHERE ID_MATERIA = :id_materia AND ID_CURSO = :id_curso", 
                    {'id_materia': subject_id, 'id_curso': course_id})
         subject_exists = cur.fetchone()[0]
         if subject_exists == 0:
             return jsonify({'error': 'Matéria não encontrada'}), 404
         
-        # VULNERÁVEL: Deletar matéria
         sql = "DELETE FROM MATERIAS WHERE ID_MATERIA = " + str(subject_id) + " AND ID_CURSO = " + str(course_id)
         cur.execute(sql)
         conn.commit()

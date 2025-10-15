@@ -9,7 +9,6 @@ def refresh_grade_student_table():
     cur = conn.cursor()
     
     try:
-        # Limpar a tabela atual (será repovoada)
         cur.execute("DELETE FROM GRADE_ALUNOS")
         
         # Buscar todos os alunos e todas as ofertas para criar as matrículas
@@ -25,9 +24,7 @@ def refresh_grade_student_table():
         cur.execute(sql_students_offers)
         enrollments = cur.fetchall()
         
-        # Para cada combinação aluno-oferta, inserir na tabela
         for student_id, offer_id, student_status in enrollments:
-            # Inserir na tabela GRADE_ALUNOS (sem media_final)
             insert_sql = """
             INSERT INTO GRADE_ALUNOS (ID_ALUNO, ID_OFERTA, STATUS) 
             VALUES (""" + str(student_id) + """, """ + str(offer_id) + """, '""" + str(student_status) + """')
@@ -99,7 +96,6 @@ def list_enrollments():
 
 @bp.route('/enrollments/<int:student_id>/<int:offer_id>', methods=['GET'])
 def get_enrollment(student_id, offer_id):
-    """Buscar matrícula específica"""
     conn = get_connection()
     cur = conn.cursor()
     try:
@@ -139,7 +135,6 @@ def get_enrollment(student_id, offer_id):
 
 @bp.route('/students/<int:student_id>/enrollments', methods=['GET'])
 def get_student_enrollments(student_id):
-    """Buscar todas as matrículas de um aluno"""
     conn = get_connection()
     cur = conn.cursor()
     try:
@@ -180,7 +175,6 @@ def get_student_enrollments(student_id):
 
 @bp.route('/offers/<int:offer_id>/enrollments', methods=['GET'])
 def get_offer_enrollments(offer_id):
-    """Buscar todas as matrículas de uma oferta"""
     conn = get_connection()
     cur = conn.cursor()
     try:

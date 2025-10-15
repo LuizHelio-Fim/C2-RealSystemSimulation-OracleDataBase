@@ -13,11 +13,9 @@ def create_course():
                 'message': 'Dados JSON são obrigatórios'
             }), 400
         
-        # Validar campos obrigatórios conforme schema do banco (todos são NOT NULL)
         nome = data.get('nome')
         carga_horaria_total = data.get('carga_horaria_total')
         
-        # Todos estes campos são NOT NULL no banco CURSO
         if not all([nome, carga_horaria_total]):
             return jsonify({
                 'success': False,
@@ -29,7 +27,6 @@ def create_course():
 
         try:
             new_id = next_seq_val("CURSO_ID_SEQ", conn)
-            # VULNERÁVEL: Usando concatenação de strings
             sql = "INSERT INTO CURSOS (ID, NOME, CARGA_HORARIA_TOTAL) VALUES (" + str(new_id) + ", '" + str(nome) + "', " + str(carga_horaria_total) + ")"
             cur.execute(sql)
             conn.commit()
@@ -90,7 +87,6 @@ def get_course_by_id(course_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # VULNERÁVEL: Usando concatenação de strings
         sql = "SELECT ID, NOME, CARGA_HORARIA_TOTAL FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql)
         row = cur.fetchone()
@@ -134,7 +130,6 @@ def update_course(course_id):
         cur = conn.cursor()
 
         try:
-            # VULNERÁVEL: Verificar se o curso existe
             sql_check = "SELECT COUNT(1) FROM CURSOS WHERE ID = " + str(course_id)
             cur.execute(sql_check)
             if cur.fetchone()[0] == 0:
@@ -143,22 +138,18 @@ def update_course(course_id):
                     'message': 'Curso não encontrado'
                 }), 404
 
-            # VULNERÁVEL: Construir query de atualização dinamicamente
             update_parts = []
             
             if 'nome' in data and data['nome'] is not None and str(data['nome']).strip() != '':
-                # Escape aspas simples para evitar SQL injection
                 nome_escaped = str(data['nome']).replace("'", "''")
                 update_parts.append("NOME = '" + nome_escaped + "'")
             
             if 'carga_horaria_total' in data:
                 carga_value = data['carga_horaria_total']
                 
-                # Se o valor for None ou string vazia, pular este campo
                 if carga_value is None or (isinstance(carga_value, str) and carga_value.strip() == ''):
-                    pass  # Não incluir este campo na atualização
+                    pass
                 else:
-                    # Validar se é um número
                     try:
                         carga_horaria = float(carga_value)
                         if carga_horaria < 0:
@@ -210,7 +201,6 @@ def delete_course(course_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # Verificar se existem alunos matriculados no curso
         sql_check_students = "SELECT COUNT(1) FROM ALUNO WHERE ID_CURSO = " + str(course_id)
         cur.execute(sql_check_students)
         student_count = cur.fetchone()[0]
@@ -220,7 +210,6 @@ def delete_course(course_id):
                 'message': 'Curso possui alunos matriculados e não pode ser excluído. Remova-os antes.'
             }), 400
         
-        # Verificar se existem matérias no curso
         sql_check_subjects = "SELECT COUNT(1) FROM MATERIA WHERE ID_CURSO = " + str(course_id)
         cur.execute(sql_check_subjects)
         subject_count = cur.fetchone()[0]
@@ -230,7 +219,6 @@ def delete_course(course_id):
                 'message': 'Curso possui matérias cadastradas e não pode ser excluído. Remova-as antes.'
             }), 400
         
-        # Verificar se o curso existe
         sql_check_exists = "SELECT COUNT(1) FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql_check_exists)
         course_exists = cur.fetchone()[0]
@@ -240,7 +228,6 @@ def delete_course(course_id):
                 'message': 'Curso não encontrado'
             }), 404
         
-        # Deletar curso
         sql = "DELETE FROM CURSOS WHERE ID = " + str(course_id)
         cur.execute(sql)
         conn.commit()
