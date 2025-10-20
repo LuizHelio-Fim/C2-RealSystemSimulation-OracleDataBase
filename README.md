@@ -1,5 +1,36 @@
 # Sistema de gestão de estudantes
 
-Este projeto busca um controle de estudantes com cursos, relatórios de média por turma e desempenho por curso.
-Neste projeto utilizamos como banco de dados o Oracle, utilizamos a limguagem de programação Python e como biblioteca o oracledb
+Sistema de gerenciamento de alunos, cursos, professores, matérias e ofertas.
 
+---
+
+##Funcionalidades do sistema
+
+- Painel com o desempenho dos alunos, cursos, professores, matérias e ofertas.
+- CRUD completo de alunos, cursos, professores, matérias e ofertas.
+- Visualição automático das matrículas.
+- Lançamento de notas por avaliação.
+-Relatórios:
+  - Estatística por curso
+  - Relatório completo de ofertas
+- Busca e filtragem em tabelas.
+- Modaal dinâmico para cadastro/edição de registro.
+
+---
+
+## Backend
+
+- Python, Flask, OracleDB, Pandas, Flask-CORS
+
+## Frontend
+
+- HTML, CSS, JavaScript
+
+## Grupo
+
+- Bernardo ...
+- João Guilherme ...
+- Luanna ...
+- Luiz Hélio
+- Pedro Sousa
+- Thomas ...
