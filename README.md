@@ -230,9 +230,9 @@ no seu navegador preferido. O frontend se conectará automaticamente ao backend 
 
 ## 👥 Equipe de Desenvolvimento
 
-- Bernardo 
+- Bernardo Lodi
 - João Guilherme 
-- Luanna 
+- Luanna Moreira
 - Luiz Hélio
 - Pedro Sousa
 - Thomas Veiga
@@ -254,3 +254,4 @@ Este projeto foi desenvolvido para fins educacionais e é de uso livre sob a lic
 **© 2025 — Sistema de Gestão de Estudantes** 
 
 Desenvolvido como parte do projeto acadêmico da disciplina de Banco de Dados.
+
